@@ -4,7 +4,6 @@ __pycache__/
 data/temp/*
 !data/temp/.gitkeep
 data/model-cache/
-data/analysis.sqlite3
 
 # Frontend dependencies and build output
 node_modules/

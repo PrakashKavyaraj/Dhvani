@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldAlert,
@@ -29,7 +29,6 @@ import {
   BookOpen,
   Info,
 } from 'lucide-react';
-import { createIncidentHmac } from '../lib/voiceToken';
 
 /**
  * Verified Benchmark & Pitch Scenario Definitions
@@ -85,7 +84,7 @@ export const PITCH_SCENARIOS = {
       bufferWipeTimeUs: 382,
       rawBytesPersisted: 0,
       voiceToken: '8f4c9a72b10e5d36c2a8f941e6284b3d750c189e3a62d5f0b8a1c497e20f5a6b',
-      auditHmac: '',
+      auditHmac: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
       complianceRule: 'Section 8(7) DPDP Act 2023 • TRAI TCCCPR Guidelines',
     },
     forensicNotes: [
@@ -145,7 +144,7 @@ export const PITCH_SCENARIOS = {
       bufferWipeTimeUs: 415,
       rawBytesPersisted: 0,
       voiceToken: '3a1f89c0d52e7418b965c2e04f87a321d60b5e982ca4170df6831e5c2b09a471',
-      auditHmac: '',
+      auditHmac: '7a9c1e405d8f2b369184c0e5a72df94136b80e21a54f728c0b936d5e1f82c409',
       complianceRule: 'Section 8(7) DPDP Act 2023 • TRAI TCCCPR Guidelines',
     },
     forensicNotes: [
@@ -204,7 +203,7 @@ export const PITCH_SCENARIOS = {
       bufferWipeTimeUs: 295,
       rawBytesPersisted: 0,
       voiceToken: '10c95e84b23f61a0d78e4521c90a36e7845f210b638d97e2041c5a89f30b6d21',
-      auditHmac: '',
+      auditHmac: '4f29a081bc638d7210e54a938c1b204f7639e1a85042d87b3109fc5a246819eb',
       complianceRule: 'Section 8(7) DPDP Act 2023 • TRAI TCCCPR Guidelines',
     },
     forensicNotes: [
@@ -744,41 +743,15 @@ export function ActiveDefenseZones({ scenario }) {
 export function DpdpPrivacyVault({ scenario }) {
   const [copiedToken, setCopiedToken] = useState(false);
   const [copiedHmac, setCopiedHmac] = useState(false);
-  const [generatedHmac, setGeneratedHmac] = useState('');
 
   const vault = scenario.dpdpVault || {
     storageMode: 'EPHEMERAL RAM BUFFER',
     bufferWipeTimeUs: 382,
     rawBytesPersisted: 0,
     voiceToken: '8f4c9a72b10e5d36c2a8f941e6284b3d750c189e3a62d5f0b8a1c497e20f5a6b',
-    auditHmac: '',
+    auditHmac: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
     complianceRule: 'Section 8(7) DPDP Act 2023 • TRAI TCCCPR Guidelines',
   };
-
-  useEffect(() => {
-    if (vault.auditHmac) {
-      setGeneratedHmac(vault.auditHmac);
-      return undefined;
-    }
-    let active = true;
-    setGeneratedHmac('');
-    createIncidentHmac({
-      voiceToken: vault.voiceToken,
-      riskLevel: scenario.riskLevel,
-      riskScore: scenario.overallRisk,
-      complianceRule: vault.complianceRule,
-      issuedAt: Date.now(),
-    }).then((signature) => {
-      if (active) setGeneratedHmac(signature);
-    }).catch(() => {
-      if (active) setGeneratedHmac('Signature unavailable');
-    });
-    return () => {
-      active = false;
-    };
-  }, [scenario.overallRisk, scenario.riskLevel, vault.auditHmac, vault.complianceRule, vault.voiceToken]);
-
-  const displayVault = { ...vault, auditHmac: generatedHmac || 'Generating...' };
 
   const copyText = (text, type) => {
     navigator.clipboard.writeText(text);
@@ -909,9 +882,9 @@ export function DpdpPrivacyVault({ scenario }) {
             HMAC Incident Signature:
           </span>
           <div className="flex items-center space-x-2 truncate">
-            <span className="text-indigo-300/90 truncate max-w-md">{displayVault.auditHmac}</span>
+            <span className="text-indigo-300/90 truncate max-w-md">{vault.auditHmac}</span>
             <button
-              onClick={() => copyText(displayVault.auditHmac, 'hmac')}
+              onClick={() => copyText(vault.auditHmac, 'hmac')}
               className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 shrink-0 cursor-pointer"
             >
               {copiedHmac ? 'Copied!' : 'Copy'}

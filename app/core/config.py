@@ -19,8 +19,6 @@ class Settings:
     min_duration_seconds: int = _int_env("MIN_DURATION_SECONDS", 2)
     min_speech_seconds: float = float(os.getenv("MIN_SPEECH_SECONDS", "1"))
     temp_audio_dir: Path = Path(os.getenv("TEMP_AUDIO_DIR", "data/temp"))
-    analysis_database_path: Path = Path(os.getenv("ANALYSIS_DATABASE_PATH", "data/analysis.sqlite3"))
-    audit_hmac_secret: str = os.getenv("AUDIT_HMAC_SECRET", "local-development-audit-secret")
     model_version: str = os.getenv("MODEL_VERSION", "baseline-v1")
     detector_backend: str = os.getenv("DETECTOR_BACKEND", "dummy").lower()
     detector_model_id: str = os.getenv("DETECTOR_MODEL_ID", "Vansh180/deepfake-audio-wav2vec2")
