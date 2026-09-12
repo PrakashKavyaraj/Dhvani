@@ -1,0 +1,1 @@
+"""Voice integrity prototype application."""

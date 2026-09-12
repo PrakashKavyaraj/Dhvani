@@ -1,0 +1,5 @@
+# Install only when enabling DETECTOR_BACKEND=transformers.
+# The selected model is roughly 400 MB; PyTorch adds a substantial local install.
+torch>=2.3
+transformers>=4.40
+numpy>=1.26
