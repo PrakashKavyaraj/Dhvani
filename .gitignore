@@ -4,3 +4,7 @@ __pycache__/
 data/temp/*
 !data/temp/.gitkeep
 data/model-cache/
+
+# Frontend dependencies and build output
+node_modules/
+dist/
