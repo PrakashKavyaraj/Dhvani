@@ -9,6 +9,7 @@ from app.integrations.m2_audio import preprocess_audio
 from app.integrations.m5_risk import calculate_risk
 from app.models.domain import AnalysisError, Status
 from app.services.job_service import JobStore
+from app.services.analysis_database import save_analysis_record
 from app.services.storage_service import delete_temporary
 
 logger = logging.getLogger(__name__)
@@ -46,6 +47,8 @@ def run_analysis(analysis_id: str, path: Path, store: JobStore) -> None:
             "versions": {"model": prediction.model_version, "preprocessing": prepared.preprocessing_version, "risk_policy": assessment.risk_policy_version},
             "processing_time_ms": round((time.perf_counter() - started) * 1000), "disclaimer": DISCLAIMER,
         }
+        cryptography = save_analysis_record(result, prepared.waveform)
+        result["dpdpVault"] = {"voiceToken": cryptography["voice_token"], "auditHmac": cryptography["audit_hmac"]}
         store.complete(analysis_id, result)
         logger.info("analysis_completed analysis_id=%s", analysis_id)
     except AnalysisError as exc:

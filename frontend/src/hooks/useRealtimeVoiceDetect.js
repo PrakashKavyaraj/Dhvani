@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { createVoiceChunkToken } from '../lib/voiceToken';
 
 /**
  * useRealtimeVoiceDetect
@@ -10,7 +11,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
  * 4. Transferring 250ms Int16 binary PCM chunks every 125ms
  * 5. Receiving live JSON predictions and driving UI risk state
  */
-export function useRealtimeVoiceDetect({ onPrediction, backendUrl } = {}) {
+export function useRealtimeVoiceDetect({ onPrediction, onVoiceToken, backendUrl } = {}) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [streamError, setStreamError] = useState(null);
@@ -147,6 +148,12 @@ export function useRealtimeVoiceDetect({ onPrediction, backendUrl } = {}) {
       // 6. Connect worklet audio buffer transfers to WebSocket
       workletNode.port.onmessage = (event) => {
         // event.data is raw Int16 ArrayBuffer (4000 samples = 250ms with 125ms stride)
+        // Token generation is intentionally independent from WebSocket delivery, so
+        // crypto latency never delays live inference.
+        createVoiceChunkToken(event.data)
+          .then((token) => onVoiceToken?.(token))
+          .catch((error) => console.warn('Unable to create voice chunk token:', error));
+
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           wsRef.current.send(event.data);
         }
@@ -156,7 +163,7 @@ export function useRealtimeVoiceDetect({ onPrediction, backendUrl } = {}) {
       setStreamError(err.message || 'Microphone access denied or AudioWorklet failed.');
       stopStreaming();
     }
-  }, [resolveWsUrl, onPrediction]);
+  }, [resolveWsUrl, onPrediction, onVoiceToken]);
 
   const stopStreaming = useCallback(() => {
     // Stop tracks

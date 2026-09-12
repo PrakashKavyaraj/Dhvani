@@ -44,6 +44,7 @@ class CompletedResponse(BaseModel):
     versions: Versions
     processing_time_ms: int
     disclaimer: str
+    dpdpVault: dict[str, str] | None = None
 
 
 class FailedResponse(BaseModel):
