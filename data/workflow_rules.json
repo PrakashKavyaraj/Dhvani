@@ -1,0 +1,41 @@
+{
+  "rules": [
+    {
+      "tier": "LOW",
+      "min_score": 0,
+      "max_score": 34,
+      "label": "Normal Conversation",
+      "color": "emerald",
+      "actions": [
+        "ALLOW_STREAM"
+      ]
+    },
+    {
+      "tier": "MODERATE",
+      "min_score": 35,
+      "max_score": 70,
+      "label": "Step-up Warning & Liveness",
+      "color": "amber",
+      "actions": [
+        "STEP_UP_LIVENESS_CHALLENGE",
+        "DISPATCH_USER_SMS_ADVISORY",
+        "REQUIRE_SECONDARY_VERIFICATION"
+      ]
+    },
+    {
+      "tier": "HIGH",
+      "min_score": 71,
+      "max_score": 100,
+      "label": "Active Fraud Defense",
+      "color": "rose",
+      "actions": [
+        "PAUSE_TRANSACTION",
+        "ALERT_FRAUD_DESK",
+        "DISPATCH_WEBHOOK",
+        "TERMINATE_SESSION"
+      ]
+    }
+  ],
+  "last_updated": "2026-10-02T14:16:12.331952+00:00",
+  "is_customized": false
+}

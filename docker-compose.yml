@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dhvani-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DETECTOR_BACKEND=transformers
+      - MODEL_VERSION=baseline-v1
+      - VOICE_SALT=DHVANI_VOICE_TOKEN_SALT_V5
+      - AUDIT_SECRET=DHVANI_AUDIT_SIGNING_KEY_V5
+      - SESSION_TTL_SECONDS=3600
+      - SECURE_MEMORY_WIPE=true
+    volumes:
+      - dhvani-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: dhvani-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  dhvani-data:
+    driver: local

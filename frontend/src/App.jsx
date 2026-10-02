@@ -31,6 +31,7 @@ import {
   PhoneCall,
   CheckCircle2,
   MicOff,
+  Users,
 } from 'lucide-react';
 import { useRealtimeVoiceDetect } from './hooks/useRealtimeVoiceDetect';
 import { SpotlightButton } from './components/SpotlightButton';
@@ -48,6 +49,21 @@ import {
 import KineticGrid from '@/components/ui/kinetic-grid';
 import { LiquidMetalButton } from '@/components/ui/liquid-metal-button';
 import DHVANI_LOGO_DATA_URI from './assets/logoBase64';
+import { ForensicExecutiveSummary } from './components/dashboard/ForensicExecutiveSummary';
+import { MultiModalEvidenceModules } from './components/dashboard/MultiModalEvidenceModules';
+import {
+  CollapsibleSecurityLayers,
+  CollapsibleActiveDefense,
+  CollapsibleCompositeSpoof,
+  CollapsibleDpdpVault,
+  CollapsibleBenchmarkBadge,
+  CollapsibleDisclaimer,
+} from './components/dashboard/ProgressivePanels';
+import { AcousticTelemetryRow } from './components/dashboard/AcousticTelemetryRow';
+import { AegisAnalysisResult } from './components/AegisAnalysisResult';
+import { LivenessChallengeModal } from './components/LivenessChallengeModal';
+import { VoiceprintVaultModal } from './components/VoiceprintVaultModal';
+import { BankingPreAuthModal } from './components/BankingPreAuthModal';
 
 const DEFAULT_API_BASE_URL = 'http://127.0.0.1:8000';
 const POLLING_INTERVAL_MS = 1000; // Polling every 1 second as specified in API contract
@@ -942,6 +958,9 @@ export default function VoiceIntegrityApp() {
   const [showConfig, setShowConfig] = useState(false);
   const [selectedConstraint, setSelectedConstraint] = useState(null);
   const [selectedEvidenceDetail, setSelectedEvidenceDetail] = useState(null);
+  const [isLivenessModalOpen, setIsLivenessModalOpen] = useState(false);
+  const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
+  const [isBankingModalOpen, setIsBankingModalOpen] = useState(false);
 
   // Permanently Enforce Cyber Obsidian Dark Mode
   useEffect(() => {
@@ -1021,10 +1040,14 @@ export default function VoiceIntegrityApp() {
   const aegisIdentity = aegisData.speaker_identity || {};
   const aegisDecision = aegisData.decision || {};
 
-  const rawSpoofScore = aegisVoice.raw_persistent_spoof_evidence ?? analysisResult?.synthetic_speech_probability ?? 0.5;
+  const rawSpoofScore = analysisResult?.secondary_risk_score != null
+    ? analysisResult.secondary_risk_score / 100.0
+    : (aegisVoice.raw_persistent_spoof_evidence ?? analysisResult?.synthetic_speech_probability ?? 0.5);
   const adjSpoofScore = aegisVoice.reliability_adjusted_spoof_evidence ?? aegisVoice.persistent_spoof_evidence ?? analysisResult?.synthetic_speech_probability ?? 0.5;
   const primaryDetector = aegisData.primary_detector || null;
-  const primaryFakeScore = primaryDetector?.fake_probability ?? analysisResult?.synthetic_speech_probability ?? 0.0;
+  const primaryFakeScore = analysisResult?.primary_risk_score != null
+    ? analysisResult.primary_risk_score / 100.0
+    : (primaryDetector?.fake_probability ?? analysisResult?.synthetic_speech_probability ?? 0.0);
   const sensorAgreement = aegisData.sensor_agreement || aegisDecision.sensor_agreement || 'AGREEMENT';
   const channelStatus = aegisChannel.status || (analysisResult?.audio_quality?.notes?.some((n) => n.toLowerCase().includes('telephony')) ? 'TELEPHONY' : 'HIGH_FIDELITY');
   const channelReliability = aegisVoice.channel_reliability ?? aegisChannel.channel_reliability ?? 1.0;
@@ -1068,12 +1091,12 @@ export default function VoiceIntegrityApp() {
         fraudDeskAlerted: overallRisk >= 71,
         outOfBandChallenge: overallRisk >= 35,
       },
-      dpdpVault: analysisResult?.dpdpVault || {
-        storageMode: 'EPHEMERAL RAM BUFFER',
-        bufferWipeTimeUs: 382,
+      dpdpVault: {
+        storageMode: analysisResult?.dpdpVault?.storageMode || 'EPHEMERAL RAM BUFFER',
+        bufferWipeTimeUs: analysisResult?.dpdpVault?.bufferWipeTimeUs || 382,
         rawBytesPersisted: 0,
-        voiceToken: '8f4c9a72b10e5d36c2a8f941e6284b3d750c189e3a62d5f0b8a1c497e20f5a6b',
-        auditHmac: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+        voiceToken: analysisResult?.voiceprint_sha256 || analysisResult?.dpdpVault?.voiceToken || '8f4c9a72b10e5d36c2a8f941e6284b3d750c189e3a62d5f0b8a1c497e20f5a6b',
+        auditHmac: analysisResult?.dpdpVault?.auditHmac || '7a9c1e405d8f2b369184c0e5a72df94136b80e21a54f728c0b936d5e1f82c409',
         complianceRule: 'Section 8(7) DPDP Act 2023 • TRAI TCCCPR Guidelines',
       },
       forensicNotes: [
@@ -1457,6 +1480,33 @@ export default function VoiceIntegrityApp() {
           <BrandLogo onResetHome={handleReturnHome} />
 
           <div className="flex items-center space-x-2.5">
+            <button
+              onClick={() => setIsLivenessModalOpen(true)}
+              className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl glass-panel border border-cyan-500/30 hover:border-cyan-400 text-xs text-cyan-300 hover:text-white transition-all shadow-sm cursor-pointer"
+              title="Active Dynamic Liveness Challenge"
+            >
+              <Zap className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="font-mono text-[11px]">⚡ Liveness</span>
+            </button>
+
+            <button
+              onClick={() => setIsVaultModalOpen(true)}
+              className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl glass-panel border border-cyan-500/30 hover:border-cyan-400 text-xs text-cyan-300 hover:text-white transition-all shadow-sm cursor-pointer"
+              title="Voice Biometric Vault"
+            >
+              <Users className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="font-mono text-[11px]">👥 Vault</span>
+            </button>
+
+            <button
+              onClick={() => setIsBankingModalOpen(true)}
+              className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl glass-panel border border-cyan-500/30 hover:border-cyan-400 text-xs text-cyan-300 hover:text-white transition-all shadow-sm cursor-pointer"
+              title="Core Banking ISO 8583 Pre-Auth & Telephony"
+            >
+              <PhoneCall className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="font-mono text-[11px]">💳 Banking</span>
+            </button>
+
             {/* Backend Connectivity Status Button */}
             <button
               onClick={() => setShowConfig(!showConfig)}
@@ -1606,56 +1656,18 @@ export default function VoiceIntegrityApp() {
                   "Aawaz jo bhi hogi, par dhokha pakda jayega."
                 </p>
 
-                {/* Instant 1-Click Controlled Demo Benchmark Scenarios */}
-                <div className="pt-2 flex flex-col items-center gap-2.5 max-w-4xl mx-auto w-full">
-                  <span className="text-xs text-slate-400 font-mono flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Instant Live Pitch Demo Scenarios:</span>
-                  </span>
-                  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 w-full">
-                    <LiquidMetalButton
-                      label="🔴 Act 1: ₹50K Police Scam"
-                      icon={<Zap className="w-3.5 h-3.5 text-rose-400" />}
-                      onClick={() => handleSelectPitchScenario('scam_red')}
-                      width={235}
-                      height={42}
-                    />
-                    <LiquidMetalButton
-                      label="🟡 Act 2: 2G Rural Telephony (Moderate)"
-                      icon={<PhoneCall className="w-3.5 h-3.5 text-amber-400" />}
-                      onClick={() => handleSelectPitchScenario('telephony_yellow')}
-                      width={300}
-                      height={42}
-                    />
-                    <LiquidMetalButton
-                      label="🟢 Act 3: Verified Citizen"
-                      icon={<CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                      onClick={() => handleSelectPitchScenario('green_safe')}
-                      width={215}
-                      height={42}
-                    />
-                  </div>
                 {/* Real-Time Live Microphone AudioWorklet Streaming Action */}
                 <div className="pt-3 pb-1 flex flex-col items-center justify-center">
                   {!isStreaming ? (
-                    <button
-                      type="button"
+                    <LiquidMetalButton
+                      label={isConnecting ? "Connecting Live Engine..." : "🎙️ Start Live Voice Surveillance"}
+                      icon={<Mic className="w-4 h-4 text-cyan-400 animate-pulse" />}
                       onClick={startStreaming}
                       disabled={isConnecting}
-                      className="group relative inline-flex items-center space-x-3 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-600/30 via-indigo-600/30 to-purple-600/30 hover:from-cyan-500/40 hover:via-indigo-500/40 hover:to-purple-500/40 border border-cyan-400/50 hover:border-cyan-300 shadow-[0_0_25px_rgba(6,182,212,0.35)] hover:shadow-[0_0_40px_rgba(6,182,212,0.55)] transition-all cursor-pointer"
-                    >
-                      <span className="relative flex h-3.5 w-3.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-cyan-500" />
-                      </span>
-                      <Mic className="w-4 h-4 text-cyan-300 group-hover:scale-110 transition-transform" />
-                      <span className="text-sm font-bold font-mono text-white tracking-wide">
-                        {isConnecting ? 'Connecting AudioWorklet & WebSocket Engine...' : '🎙️ Start Live Mic Voice Surveillance'}
-                      </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                        125ms Stride • Live ML
-                      </span>
-                    </button>
+                      width={340}
+                      height={46}
+                      className="shadow-2xl shadow-cyan-500/40"
+                    />
                   ) : (
                     <div className="flex flex-col sm:flex-row items-center gap-3 p-3 rounded-2xl bg-black/80 border border-rose-500/70 shadow-[0_0_35px_rgba(244,63,94,0.4)] backdrop-blur-xl">
                       <div className="flex items-center space-x-3 px-2">
@@ -1701,7 +1713,6 @@ export default function VoiceIntegrityApp() {
                     <span className="h-[1px] w-12 bg-white/10" />
                   </div>
                 </div>
-              </div>
             </div>
 
               {/* Hidden file input */}
@@ -2112,475 +2123,13 @@ export default function VoiceIntegrityApp() {
                 </div>
               </motion.div>
 
-              {/* Zero-Retention Security Seal Banner */}
-              <motion.div
-                variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
-                className="p-4 sm:p-5 rounded-2xl glass-panel border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl shadow-emerald-950/20"
-              >
-                <div className="flex items-center space-x-3.5">
-                  <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/10">
-                    <Lock className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h4 className="text-xs font-display font-bold uppercase tracking-wider text-slate-200">
-                        Zero-Retention Security Verified
-                      </h4>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                        Audio Purged
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-0.5 leading-relaxed font-sans">
-                      Analyzed in volatile memory. The audio payload has been <span className="text-emerald-400 font-medium">permanently purged from server storage</span>. Zero biometric profiles retained.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 shrink-0">
-                  <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-[11px] font-mono text-slate-300 bg-black/40 border border-white/5">
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Disk Purged</span>
-                  </span>
-                  <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-[11px] font-mono text-slate-300 bg-black/40 border border-white/5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Non-Persistent</span>
-                  </span>
-                </div>
-              </motion.div>
-
-              {/* Operational Recommendation Banner */}
-              {analysisResult.recommendation && (
-                <motion.div
-                  variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
-                  className={`p-5 rounded-2xl border backdrop-blur-xl flex items-start space-x-4 shadow-xl ${
-                    analysisResult.risk_level === 'HIGH'
-                      ? 'bg-rose-950/30 border-rose-600/50 text-rose-100'
-                      : (analysisResult.risk_level === 'MEDIUM' || analysisResult.risk_level === 'MODERATE')
-                      ? 'bg-amber-950/30 border-amber-600/50 text-amber-100'
-                      : 'bg-emerald-950/30 border-emerald-600/50 text-emerald-100'
-                  }`}
-                >
-                  <div
-                    className={`p-2.5 rounded-xl shrink-0 mt-0.5 ${
-                      analysisResult.risk_level === 'HIGH'
-                        ? 'bg-rose-500/20 text-rose-400'
-                        : (analysisResult.risk_level === 'MEDIUM' || analysisResult.risk_level === 'MODERATE')
-                        ? 'bg-amber-500/20 text-amber-400'
-                        : 'bg-emerald-500/20 text-emerald-400'
-                    }`}
-                  >
-                    {analysisResult.risk_level === 'HIGH' ? (
-                      <ShieldAlert className="w-6 h-6" />
-                    ) : (
-                      <ShieldCheck className="w-6 h-6" />
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-display font-bold uppercase tracking-wider opacity-90">
-                      Forensic Protocol Recommendation
-                    </h4>
-                    <p className="text-sm font-medium mt-1 leading-relaxed font-sans">{analysisResult.recommendation}</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Scientific Disclaimer: MODEL EVIDENCE != PROBABILITY OF FRAUD */}
-              <motion.div
-                variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
-                className="p-3.5 rounded-2xl border border-cyan-500/30 bg-cyan-950/20 text-slate-300 text-xs flex items-center justify-between gap-3 shadow-lg"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/40 shrink-0">
-                    FORENSIC PRINCIPLE
-                  </span>
-                  <span className="text-slate-200 font-semibold font-sans">
-                    Model Evidence ≠ Probability of Fraud
-                  </span>
-                  <span className="hidden md:inline text-slate-400 text-[11px]">
-                    — Acoustic spoof metrics evaluate raw signal deviations relative to clean training distributions, not legal culpability, user identity, or fraudulent intent.
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono text-cyan-400 shrink-0 hidden sm:inline">ISO/IEC 30107</span>
-              </motion.div>
-
-              {/* Telephony Channel Compensation Banner (when active) */}
-              {isTelephony && (
-                <motion.div
-                  variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
-                  className="p-4 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-amber-900/20 to-slate-950/40 text-amber-100 flex items-start gap-3.5 shadow-xl"
-                >
-                  <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0 mt-0.5">
-                    <PhoneCall className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-300">
-                        Telephony Channel Compensation Active ({Math.round(channelReliability * 100)}% Confidence)
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                        Down-Weighted
-                      </span>
-                    </div>
-                    <p className="text-xs font-sans text-amber-200/90 mt-1 leading-relaxed">
-                      Telephony channel detected. Acoustic spoof evidence is down-weighted because channel artifacts can resemble spoofing patterns.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* AEGIS Multi-Modal Decision Architecture Flow */}
-              <motion.div
-                variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
-                className="glass-panel rounded-3xl p-5 sm:p-6 border border-cyan-500/20 space-y-3 shadow-xl"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-display font-bold uppercase tracking-widest text-slate-200">
-                      AEGIS Multi-Modal Evidence Architecture
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Decision State:</span>
-                    <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full border ${
-                      decisionAction === 'BLOCK'
-                        ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                        : decisionAction === 'VERIFY'
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                    }`}>
-                      {decisionAction === 'VERIFY' ? 'UNCERTAIN / VERIFY' : decisionAction}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Visual Pipeline Equation */}
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 items-stretch text-center">
-                  {/* Box 1: Voice Authenticity */}
-                  <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/10 flex flex-col justify-between text-left">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-cyan-400 uppercase font-semibold">1. Authenticity</span>
-                      <Radio className="w-3 h-3 text-cyan-400 opacity-60" />
-                    </div>
-                    <div className="my-1.5">
-                      <span className="text-sm font-bold text-slate-100 font-mono">{(primaryFakeScore * 100).toFixed(1)}%</span>
-                      <span className="block text-[10px] text-slate-400 font-sans">
-                        {primaryDetector ? 'Primary (Forensics)' : 'AASIST-L'}
-                      </span>
-                    </div>
-                    <span className={`text-[9px] font-mono ${sensorAgreement === 'DISAGREEMENT' ? 'text-amber-400' : 'text-slate-500'}`}>
-                      {sensorAgreement === 'DISAGREEMENT' ? 'Sensor Disagreement' : 'AASIST Corroborating'}
-                    </span>
-                  </div>
-
-                  {/* Box 2: Channel Reliability */}
-                  <div className={`p-3 rounded-2xl border flex flex-col justify-between text-left ${
-                    isTelephony ? 'bg-amber-950/25 border-amber-500/40 text-amber-200' : 'bg-slate-950/70 border-white/10'
-                  }`}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase font-semibold text-amber-400">2. Channel</span>
-                      <PhoneCall className="w-3 h-3 text-amber-400 opacity-60" />
-                    </div>
-                    <div className="my-1.5">
-                      <span className="text-sm font-bold text-slate-100 font-mono">{channelStatus}</span>
-                      <span className="block text-[10px] text-slate-400 font-sans">{(channelReliability * 100).toFixed(0)}% Reliability</span>
-                    </div>
-                    <span className="text-[9px] font-mono text-slate-500">Bandwidth / Cutoff</span>
-                  </div>
-
-                  {/* Box 3: Speaker Identity */}
-                  <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/10 flex flex-col justify-between text-left">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-cyan-400 uppercase font-semibold">3. Identity</span>
-                      <Mic className="w-3 h-3 text-cyan-400 opacity-60" />
-                    </div>
-                    <div className="my-1.5">
-                      <span className="text-sm font-bold text-slate-100 font-mono">
-                        {speakerSimilarity != null ? `${(speakerSimilarity * 100).toFixed(1)}%` : 'Baseline'}
-                      </span>
-                      <span className="block text-[10px] text-slate-400 font-sans">ECAPA-TDNN</span>
-                    </div>
-                    <span className="text-[9px] font-mono text-slate-500">
-                      {speakerRawSimilarity != null ? `cos: ${speakerRawSimilarity.toFixed(2)}` : 'Enrollment Print'}
-                    </span>
-                  </div>
-
-                  {/* Box 4: Temporal Evidence */}
-                  <div className="p-3 rounded-2xl bg-slate-950/70 border border-white/10 flex flex-col justify-between text-left">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-cyan-400 uppercase font-semibold">4. Temporal</span>
-                      <Clock className="w-3 h-3 text-cyan-400 opacity-60" />
-                    </div>
-                    <div className="my-1.5">
-                      <span className="text-sm font-bold text-slate-100 font-mono">{windowsAnalyzed} Windows</span>
-                      <span className="block text-[10px] text-slate-400 font-sans">Multi-Window Pool</span>
-                    </div>
-                    <span className="text-[9px] font-mono text-slate-500">Drift & Decay</span>
-                  </div>
-
-                  {/* Box 5: AEGIS Trust Decision */}
-                  <div className={`p-3 rounded-2xl border flex flex-col justify-between text-left ${
-                    decisionAction === 'BLOCK'
-                      ? 'bg-rose-950/40 border-rose-500/50 text-rose-200'
-                      : decisionAction === 'VERIFY'
-                      ? 'bg-amber-950/40 border-amber-500/50 text-amber-200'
-                      : 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200'
-                  }`}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase font-semibold">Decision</span>
-                      <ShieldCheck className="w-3 h-3 opacity-60" />
-                    </div>
-                    <div className="my-1.5">
-                      <span className="text-sm font-bold font-mono tracking-wider">
-                        {decisionAction === 'VERIFY' ? 'VERIFY' : decisionAction}
-                      </span>
-                      <span className="block text-[10px] opacity-80 font-sans">Risk: {overallRisk}/100</span>
-                    </div>
-                    <span className="text-[9px] font-mono opacity-70">
-                      {decisionAction === 'ALLOW' ? 'Verified Safe' : decisionAction === 'VERIFY' ? 'Step-up Challenge' : 'Terminate Call'}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Act 3: 3 Core Security Layers (< 2ms Live Call Analysis) */}
-              <ThreeLayerSecurityCard scenario={displayScenario} />
-
-              {/* Act 4: Prevention Over Detection (Tri-Color Action Zones & Mitigations) */}
-              <ActiveDefenseZones scenario={displayScenario} />
-
-              {/* Centerpiece: The Risk Meter & Forensic Evidence Card */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                {/* 1. Glowing Circular Gauge Risk Meter */}
-                <motion.div
-                  variants={{ hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1 } }}
-                  className="glass-panel-glow rounded-3xl p-6 flex flex-col justify-between"
-                >
-                  <div className="flex items-center justify-between pb-2">
-                    <span className="text-xs font-mono font-medium text-slate-400 uppercase tracking-widest">
-                      Composite Risk Index
-                    </span>
-                    <span className="text-xs font-mono text-cyan-400">Score Range: 0-100</span>
-                  </div>
-
-                  <AnimatedRiskGauge
-                    score={analysisResult.risk_score}
-                    riskLevel={analysisResult.risk_level}
-                  />
-
-                  <div className="pt-4 border-t border-white/10 text-xs text-slate-400 flex items-center justify-between">
-                    <span>Classification Protocol:</span>
-                    <span className="text-slate-200 font-medium">
-                      {analysisResult.risk_score <= 39
-                        ? 'Likely Authentic Human'
-                        : analysisResult.risk_score <= 69
-                        ? 'Uncertain / Secondary Verification Advised'
-                        : 'Elevated Synthetic Characteristics'}
-                    </span>
-                  </div>
-                </motion.div>
-
-                {/* 2. Scientifically Rigorous Evidence Card */}
-                <motion.div
-                  variants={{ hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1 } }}
-                  className="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-xs font-mono font-medium text-slate-400 uppercase tracking-widest block">
-                          Reliability-Adjusted Spoof Evidence
-                        </span>
-                        <span className="text-[11px] font-sans text-slate-400">
-                          Fused Acoustic Metric
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-mono text-lg text-cyan-400 font-bold block">
-                          {(adjSpoofScore * 100).toFixed(1)}%
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-500">
-                          Range: 0.0 - 1.0
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-6">
-                      {/* Segmented Gradient Bar */}
-                      <div className="h-4 w-full bg-slate-950 rounded-full overflow-hidden p-0.5 border border-white/10 relative">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{
-                            width: `${Math.min(100, Math.max(4, adjSpoofScore * 100))}%`,
-                          }}
-                          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                          className={`h-full rounded-full ${
-                            analysisResult.risk_level === 'HIGH'
-                              ? 'bg-gradient-to-r from-amber-500 to-rose-600 shadow-lg shadow-rose-500/40'
-                              : (analysisResult.risk_level === 'MEDIUM' || analysisResult.risk_level === 'MODERATE')
-                              ? 'bg-gradient-to-r from-cyan-500 to-amber-500 shadow-lg shadow-amber-500/40'
-                              : 'bg-gradient-to-r from-teal-500 to-emerald-500 shadow-lg shadow-emerald-500/40'
-                          }`}
-                        />
-                      </div>
-
-                      <div className="flex justify-between text-[11px] text-slate-500 font-mono mt-2.5">
-                        <span className="text-emerald-400 font-medium">0% (Organic)</span>
-                        <span className="text-slate-400">50% (Neutral)</span>
-                        <span className="text-rose-400 font-medium">100% (Synthetic)</span>
-                      </div>
-                    </div>
-
-                    {/* Detailed Acoustic Metric Breakdown */}
-                    <div className="mt-5 grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-black/40 border border-white/5 text-xs font-mono">
-                      <div>
-                        <span className="text-slate-500 text-[10px] block uppercase">Primary Detector:</span>
-                        <span className="text-slate-200 font-bold">{(primaryFakeScore * 100).toFixed(1)}%</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 text-[10px] block uppercase">Secondary AASIST:</span>
-                        <span className="text-slate-200 font-bold">{(rawSpoofScore * 100).toFixed(1)}%</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 text-[10px] block uppercase">Channel Domain:</span>
-                        <span className={`font-bold ${isTelephony ? 'text-amber-400' : 'text-emerald-400'}`}>
-                          {channelStatus} ({(channelReliability * 100).toFixed(0)}%)
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 text-[10px] block uppercase">Sensor Agreement:</span>
-                        <span className={`font-bold ${sensorAgreement === 'DISAGREEMENT' ? 'text-amber-400' : 'text-emerald-400'}`}>
-                          {sensorAgreement}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 pt-3.5 border-t border-white/10 text-xs text-slate-400 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span>Model Architecture Confidence:</span>
-                      <span className="text-slate-200 font-mono font-semibold">
-                        {analysisResult.model_confidence != null
-                          ? `${(analysisResult.model_confidence * 100).toFixed(1)}%`
-                          : 'Calibrated'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Inference Latency:</span>
-                      <span className="text-slate-200 font-mono font-semibold">
-                        {analysisResult.processing_time_ms ? `${analysisResult.processing_time_ms} ms` : 'Sub-second'}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Interactive Audio Waveform in Results */}
-              {audioUrl && (
-                <motion.div variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}>
-                  <InteractiveWaveform
-                    audioUrl={audioUrl}
-                    isPlaying={isAudioPlaying}
-                    onTogglePlay={setIsAudioPlaying}
-                    duration={audioDuration || 0}
-                  />
-                </motion.div>
-              )}
-
-              {/* 3D Tilt Evidence Cards Grid */}
-              <div>
-                <h3 className="text-sm font-display font-bold text-slate-200 uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-cyan-400" />
-                  <span>Acoustic Evidence Telemetry</span>
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Card 1: Signal Quality */}
-                  <TiltEvidenceCard
-                    title="Audio Quality"
-                    value={analysisResult.audio_quality?.status || 'Suitable'}
-                    subtitle="Acoustic clarity for feature extraction"
-                    tag="Input Gate"
-                    statusColor={analysisResult.audio_quality?.status === 'suitable' ? 'emerald' : 'amber'}
-                    delay={0.1}
-                    onClick={() => setSelectedEvidenceDetail('audio_quality')}
-                  />
-
-                  {/* Card 2: Voiced Duration */}
-                  <TiltEvidenceCard
-                    title="Voiced Speech"
-                    value={
-                      analysisResult.audio_quality?.speech_seconds != null
-                        ? `${analysisResult.audio_quality.speech_seconds}s`
-                        : '3.82s'
-                    }
-                    subtitle="Active voiced phoneme duration"
-                    tag="Vocal Track"
-                    statusColor="cyan"
-                    delay={0.2}
-                    onClick={() => setSelectedEvidenceDetail('voiced_speech')}
-                  />
-
-                  {/* Card 3: Spectral Anomaly */}
-                  <TiltEvidenceCard
-                    title="Spectral Anomaly"
-                    value={analysisResult.evidence?.spectral_anomaly || 'Low'}
-                    subtitle="Frequency-domain phase consistency"
-                    tag="Wav2Vec2"
-                    statusColor={
-                      analysisResult.evidence?.spectral_anomaly === 'high'
-                        ? 'rose'
-                        : analysisResult.evidence?.spectral_anomaly === 'medium'
-                        ? 'amber'
-                        : 'emerald'
-                    }
-                    delay={0.3}
-                    onClick={() => setSelectedEvidenceDetail('spectral_anomaly')}
-                  />
-
-                  {/* Card 4: Prosody Anomaly */}
-                  <TiltEvidenceCard
-                    title="Prosody Anomaly"
-                    value={analysisResult.evidence?.prosody_anomaly?.replace('_', ' ') || 'Natural'}
-                    subtitle="Pitch contour (YIN F0) dynamics"
-                    tag="F0 Dynamics"
-                    statusColor={
-                      analysisResult.evidence?.prosody_anomaly === 'high'
-                        ? 'rose'
-                        : analysisResult.evidence?.prosody_anomaly === 'moderate'
-                        ? 'amber'
-                        : 'emerald'
-                    }
-                    delay={0.4}
-                    onClick={() => setSelectedEvidenceDetail('prosody_anomaly')}
-                  />
-                </div>
-
-                <p className="text-[11px] text-slate-400 font-mono mt-3.5 flex items-center justify-center gap-1.5">
-                  <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Click any acoustic metric above to inspect diagnostic thresholds and forensic findings</span>
-                </p>
-              </div>
-
-              {/* Act 5: DPDP Act 2023 & Enterprise Privacy Shield */}
-              <DpdpPrivacyVault scenario={displayScenario} />
-
-              {/* Act 6: Indian Telephony Codec Resilience & ASVspoof Benchmark */}
-              <IndianTelephonyBenchmarkBadge scenario={displayScenario} />
-
-              {/* Security & Forensic Legal Disclaimer (Monospaced Terminal Style) */}
-              <motion.div
-                variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
-                className="p-4 rounded-2xl bg-black/60 border border-white/10 font-mono text-xs text-slate-400 space-y-1.5 shadow-sm"
-              >
-                <div className="flex items-center space-x-2 text-[11px] text-cyan-400 font-bold uppercase tracking-wider">
-                  <Terminal className="w-3.5 h-3.5" />
-                  <span>[AUDIT PROTOCOL LOG // SYSTEM DISCLAIMER]</span>
-                </div>
-                <p className="leading-relaxed text-slate-400 text-[11px]">
-                  {analysisResult.disclaimer ||
-                    'This system produces a probabilistic risk estimate only. It does not provide forensic certainty or admissible legal conclusions and must not be used to execute automated actions without independent out-of-band verification.'}
-                </p>
-              </motion.div>
+              {/* REUSABLE COMPLETE AEGIS FORENSIC RESULT COMPONENT */}
+              <AegisAnalysisResult
+                result={analysisResult}
+                audioUrl={audioUrl}
+                audioDuration={audioDuration}
+                onReset={resetToIdle}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -2857,6 +2406,28 @@ export default function VoiceIntegrityApp() {
         isOpen={isPitchHudOpen}
         onClose={() => setIsPitchHudOpen(false)}
         onTriggerAct={handleSelectPitchScenario}
+      />
+
+      {/* Active Dynamic Challenge-Response Liveness Modal */}
+      <LivenessChallengeModal
+        isOpen={isLivenessModalOpen}
+        onClose={() => setIsLivenessModalOpen(false)}
+        apiBaseUrl={apiBaseUrl}
+      />
+
+      {/* Multi-Tenant Customer Voice Biometric Vault Modal */}
+      <VoiceprintVaultModal
+        isOpen={isVaultModalOpen}
+        onClose={() => setIsVaultModalOpen(false)}
+        apiBaseUrl={apiBaseUrl}
+      />
+
+      {/* Core Banking Pre-Auth Fraud Intercept & Telephony Modal */}
+      <BankingPreAuthModal
+        isOpen={isBankingModalOpen}
+        onClose={() => setIsBankingModalOpen(false)}
+        apiBaseUrl={apiBaseUrl}
+        analysisResult={analysisResult}
       />
     </KineticGrid>
   );

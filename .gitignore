@@ -1,10 +1,43 @@
+# Python bytecode & cache
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
 .pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
 .venv/
+venv/
+ENV/
+env/
+
+# Data & Runtime Storage
 data/temp/*
 !data/temp/.gitkeep
 data/model-cache/
+data/*.db
+data/*.sqlite3
+data/alerts_outbox.json
+data/analysis_records.json
+*.db
+*.sqlite3
 
-# Frontend dependencies and build output
+# Models & Checkpoints
+models/
+*.safetensors
+*.jit
+
+# Frontend build & dependencies
 node_modules/
 dist/
+dist-institution/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -84,7 +84,7 @@ export const PITCH_SCENARIOS = {
       bufferWipeTimeUs: 382,
       rawBytesPersisted: 0,
       voiceToken: '8f4c9a72b10e5d36c2a8f941e6284b3d750c189e3a62d5f0b8a1c497e20f5a6b',
-      auditHmac: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      auditHmac: 'd893f412c98a5e7b2310f842a17cb6e9540b3c81e7d219fa640e5831bc74e92a',
       complianceRule: 'Section 8(7) DPDP Act 2023 • TRAI TCCCPR Guidelines',
     },
     forensicNotes: [
@@ -222,16 +222,7 @@ export const PITCH_SCENARIOS = {
 export function PitchScenarioBar({ activeScenarioId, onSelectScenario, onOpenPitchCue }) {
   return (
     <div className="w-full bg-slate-950/80 border-b border-white/10 backdrop-blur-md px-3 sm:px-6 py-2.5 z-40">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2.5">
-        <div className="flex items-center space-x-2.5 shrink-0">
-          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span>LIVE PITCH CONTROLLER</span>
-          </div>
-          <span className="text-xs text-slate-400 hidden lg:inline font-sans">
-            Sync with presenter's spoken cues:
-          </span>
-        </div>
+      <div className="max-w-7xl mx-auto flex items-center justify-center">
 
         {/* 3 Pitch Scenarios Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-2">
@@ -289,16 +280,6 @@ export function PitchScenarioBar({ activeScenarioId, onSelectScenario, onOpenPit
             </span>
           </button>
         </div>
-
-        {/* Presenter Cue HUD Trigger */}
-        <button
-          type="button"
-          onClick={onOpenPitchCue}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600/30 to-indigo-600/30 border border-cyan-400/40 text-cyan-200 hover:text-white hover:border-cyan-300 text-xs font-mono font-medium shadow-sm transition-all cursor-pointer hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] shrink-0"
-        >
-          <BookOpen className="w-3.5 h-3.5 text-cyan-300" />
-          <span>🎙️ Presenter Script HUD</span>
-        </button>
       </div>
     </div>
   );
@@ -749,7 +730,7 @@ export function DpdpPrivacyVault({ scenario }) {
     bufferWipeTimeUs: 382,
     rawBytesPersisted: 0,
     voiceToken: '8f4c9a72b10e5d36c2a8f941e6284b3d750c189e3a62d5f0b8a1c497e20f5a6b',
-    auditHmac: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    auditHmac: '7a9c1e405d8f2b369184c0e5a72df94136b80e21a54f728c0b936d5e1f82c409',
     complianceRule: 'Section 8(7) DPDP Act 2023 • TRAI TCCCPR Guidelines',
   };
 

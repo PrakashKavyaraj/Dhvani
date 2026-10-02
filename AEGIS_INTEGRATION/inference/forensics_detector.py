@@ -294,7 +294,7 @@ class ForensicsDetector:
         else:
             center_chunk = wav
 
-        with torch.no_grad():
+        with torch.inference_mode():
             center_logit = self.model(center_chunk.unsqueeze(0).to(self.device)).float()
             center_bonafide = float(torch.sigmoid(center_logit).item())
             center_fake = 1.0 - center_bonafide
@@ -310,7 +310,7 @@ class ForensicsDetector:
             
             if window_tensors:
                 batch = torch.stack(window_tensors).to(self.device)
-                with torch.no_grad():
+                with torch.inference_mode():
                     logits = self.model(batch).float()
                     bonafides = torch.sigmoid(logits).cpu().numpy()
                     window_scores = [round(float(1.0 - b), 4) for b in bonafides]

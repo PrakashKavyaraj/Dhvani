@@ -98,17 +98,43 @@ class AegisEngine:
             device=device,
         )
 
+        try:
+            from app.core.vad_engine import vad_engine
+            self.vad = vad_engine
+        except Exception:
+            self.vad = None
+
+        try:
+            from app.core.presentation_attack_detector import presentation_attack_detector
+            self.pad = presentation_attack_detector
+        except Exception:
+            self.pad = None
+
+        try:
+            from app.core.passive_liveness_engine import passive_liveness_engine
+            self.passive_liveness = passive_liveness_engine
+        except Exception:
+            self.passive_liveness = None
+
     def analyze(self, audio_path, session_id="aegis-session"):
 
         start = time.perf_counter()
         audio_input = audio_path if isinstance(audio_path, np.ndarray) else str(audio_path)
 
         # ---------------------------------------------------------
-        # 0. ACOUSTIC CHANNEL DOMAIN ANALYSIS
+        # 0. VOICE ACTIVITY DETECTION & ACOUSTIC CHANNEL
         # ---------------------------------------------------------
 
+        vad_info = self.vad.analyze(audio_input) if self.vad else None
         channel_info = self.channel_analyzer.analyze(audio_input)
         channel_reliability = float(channel_info.get("channel_reliability", 1.0))
+
+        # ---------------------------------------------------------
+        # 0.5 PRESENTATION ATTACK DETECTION & PASSIVE LIVENESS (ISO/IEC 30107-3)
+        # ---------------------------------------------------------
+
+        pad_result = self.pad.analyze(audio_input) if self.pad else None
+        passive_liveness_result = self.passive_liveness.evaluate(audio_input) if self.passive_liveness else None
 
         # ---------------------------------------------------------
         # 1. PRIMARY DETECTOR: Forensics 0.3B
@@ -247,7 +273,7 @@ class AegisEngine:
             channel_status=str(channel_info.get("channel_status", "HIGH_FIDELITY")),
             speaker_similarity=speaker_similarity,
             conversation_risk=None,
-            replay_score=None,
+            replay_score=float(pad_result.presentation_attack_probability) if pad_result else None,
             audio_quality=float(
                 spoof_result.get("audio_quality", 1.0)
             ),
@@ -257,7 +283,7 @@ class AegisEngine:
             spoof_available=True,
             identity_available=identity_available,
             conversation_available=False,
-            replay_available=False,
+            replay_available=pad_result is not None,
         )
 
         processing_ms = (time.perf_counter() - start) * 1000
@@ -273,6 +299,8 @@ class AegisEngine:
                 "duration": spoof_result.get("duration_sec"),
                 "quality": spoof_result.get("audio_quality", 1.0),
             },
+
+            "vad": vad_info.to_dict() if vad_info else None,
 
             "primary_detector": {
                 "model": primary_result.get("model", "eliya/forensics_0.3B_base_deepfake_classifier"),
@@ -320,10 +348,14 @@ class AegisEngine:
                 "signals": [],
             },
 
-            "replay": {
+            "replay": pad_result.to_dict() if pad_result else {
                 "status": "NOT_AVAILABLE",
                 "score": None,
             },
+
+            "presentation_attack": pad_result.to_dict() if pad_result else None,
+
+            "passive_liveness": passive_liveness_result.to_dict() if passive_liveness_result else None,
 
             "temporal": temporal_result,
 

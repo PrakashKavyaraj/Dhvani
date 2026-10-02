@@ -1,36 +1,49 @@
-from __future__ import annotations
-
-import re
+import uuid
 from pathlib import Path
-from uuid import uuid4
-
 from fastapi import UploadFile
-
-from app.core.config import settings
-from app.models.domain import AnalysisError
-
-
-def safe_filename(name: str | None) -> str:
-    candidate = Path(name or "audio.wav").name
-    return re.sub(r"[^A-Za-z0-9._-]", "_", candidate)[:120] or "audio.wav"
+from app.core.config import get_settings
+from app.core.errors import FileTooLargeError
+from app.core.logging import logger
 
 
-async def save_temporarily(upload: UploadFile, analysis_id: str) -> Path:
-    settings.temp_audio_dir.mkdir(parents=True, exist_ok=True)
-    path = settings.temp_audio_dir / f"{analysis_id}-{uuid4().hex}.wav"
-    size = 0
-    try:
-        with path.open("wb") as destination:
-            while chunk := await upload.read(1024 * 1024):
-                size += len(chunk)
-                if size > settings.max_upload_bytes:
-                    raise AnalysisError("FILE_TOO_LARGE", "The uploaded file exceeds the configured size limit.")
-                destination.write(chunk)
-        return path
-    except Exception:
-        delete_temporary(path)
-        raise
+class StorageService:
+    @staticmethod
+    async def save_upload_chunked(file: UploadFile) -> Path:
+        settings = get_settings()
+        dest_dir = settings.temp_audio_path
+        filename = f"{uuid.uuid4().hex}.wav"
+        dest_path = dest_dir / filename
+
+        total_bytes = 0
+        chunk_size = 64 * 1024  # 64 KB
+
+        try:
+            with open(dest_path, "wb") as buffer:
+                while chunk := await file.read(chunk_size):
+                    total_bytes += len(chunk)
+                    if total_bytes > settings.max_upload_size_bytes:
+                        dest_path.unlink(missing_ok=True)
+                        raise FileTooLargeError(
+                            f"File size exceeds limit of {settings.MAX_UPLOAD_SIZE_MB} MB."
+                        )
+                    buffer.write(chunk)
+        except Exception:
+            dest_path.unlink(missing_ok=True)
+            raise
+
+        return dest_path
+
+    @staticmethod
+    def delete_file(path: Path | str | None) -> None:
+        if path is None:
+            return
+        try:
+            target = Path(path)
+            if target.is_file():
+                target.unlink(missing_ok=True)
+                logger.debug("Deleted temporary audio file: %s", target.name)
+        except Exception as exc:
+            logger.warning("Failed to remove temporary file: %s", exc)
 
 
-def delete_temporary(path: Path) -> None:
-    path.unlink(missing_ok=True)
+storage_service = StorageService()

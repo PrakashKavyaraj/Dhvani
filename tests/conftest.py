@@ -2,38 +2,55 @@ import io
 import math
 import struct
 import wave
-
 import pytest
 from fastapi.testclient import TestClient
-
+from app.core.config import get_settings
 from app.main import app
-from app.services.job_service import job_store
 
 
-def wav_bytes(seconds: float = 2.5, rate: int = 8000, amplitude: int = 1000) -> bytes:
-    raw = b"".join(struct.pack("<h", int(amplitude * math.sin(2 * math.pi * 440 * i / rate))) for i in range(int(seconds * rate)))
-    buffer = io.BytesIO()
-    with wave.open(buffer, "wb") as output:
-        output.setnchannels(1)
-        output.setsampwidth(2)
-        output.setframerate(rate)
-        output.writeframes(raw)
-    return buffer.getvalue()
+def generate_test_wav(
+    duration: float = 3.0,
+    sample_rate: int = 16000,
+    channels: int = 1,
+    sample_width: int = 2,
+    frequency: float = 440.0,
+    silent: bool = False,
+) -> bytes:
+    """Programmatically generates valid in-memory PCM WAV bytes."""
+    buf = io.BytesIO()
+    total_frames = int(duration * sample_rate)
 
+    with wave.open(buf, "wb") as wf:
+        wf.setnchannels(channels)
+        wf.setsampwidth(sample_width)
+        wf.setframerate(sample_rate)
 
-@pytest.fixture(autouse=True)
-def clear_jobs():
-    job_store._jobs.clear()
-    yield
-    job_store._jobs.clear()
+        frames = bytearray()
+        for i in range(total_frames):
+            if silent:
+                sample_val = 0
+            else:
+                # Active sinusoidal audio
+                t = float(i) / sample_rate
+                sine_val = math.sin(2.0 * math.pi * frequency * t)
+                sample_val = int(sine_val * 16000)
+
+            if sample_width == 2:
+                frame = struct.pack("<h", sample_val)
+            else:
+                frame = struct.pack("<B", min(255, max(0, int(sample_val / 256.0 + 128))))
+
+            frames.extend(frame * channels)
+
+        wf.writeframes(frames)
+
+    return buf.getvalue()
 
 
 @pytest.fixture
 def client():
-    with TestClient(app) as client:
-        yield client
-
-
-@pytest.fixture
-def valid_wav():
-    return wav_bytes()
+    # Force baseline dummy detector during automated testing
+    settings = get_settings()
+    settings.DETECTOR_BACKEND = "dummy"
+    with TestClient(app) as test_client:
+        yield test_client

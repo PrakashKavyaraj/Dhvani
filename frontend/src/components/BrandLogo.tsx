@@ -69,20 +69,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ onResetHome, className = '
 
       {/* Brand Text Content */}
       <div className="relative z-10">
-        <div className="flex items-center space-x-2">
-          <h1 className="font-display font-bold text-xl tracking-tight text-white group-hover:text-cyan-200 transition-colors drop-shadow-[0_0_12px_rgba(6,182,212,0.3)]">
-            Dhvani
-          </h1>
-          <span className="px-2 py-0.5 text-[10px] font-mono tracking-widest font-semibold rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 uppercase group-hover:border-cyan-400/80 transition-colors">
-            Team Jasoos
-          </span>
-          <span className="px-1.5 py-0.2 text-[9px] font-mono tracking-wider font-semibold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hidden md:inline">
-            LIVE ENGINE
-          </span>
-        </div>
-        <p className="text-xs text-slate-400 hidden sm:block font-sans group-hover:text-slate-300 transition-colors">
-          Real-Time AI Voice Deepfake & Active Fraud Prevention System
-        </p>
+        <h1 className="font-display font-bold text-xl tracking-tight text-white group-hover:text-cyan-200 transition-colors drop-shadow-[0_0_12px_rgba(6,182,212,0.3)]">
+          Dhvani
+        </h1>
       </div>
     </motion.button>
   );

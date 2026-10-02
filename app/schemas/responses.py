@@ -1,57 +1,59 @@
-from typing import Literal
+from typing import Optional
+from pydantic import BaseModel, ConfigDict, Field
 
-from pydantic import BaseModel, Field
+
+class HealthResponse(BaseModel):
+    status: str = "ok"
+    versions: dict[str, str]
 
 
-class Versions(BaseModel):
+class AnalysisAcceptedResponse(BaseModel):
+    analysis_id: str
+    status: str = "queued"
+    message: str = "Audio accepted for analysis."
+
+
+class AudioQualitySchema(BaseModel):
+    status: str
+    speech_seconds: float
+    notes: list[str] = Field(default_factory=list)
+
+
+class EvidenceSchema(BaseModel):
+    spectral_anomaly: str
+    prosody_anomaly: str
+
+
+class VersionsSchema(BaseModel):
     model: str
     preprocessing: str
     risk_policy: str
 
 
-class ErrorDetail(BaseModel):
+class JobErrorSchema(BaseModel):
     code: str
     message: str
 
 
-class AcceptedResponse(BaseModel):
+class AnalysisStatusResponse(BaseModel):
     analysis_id: str
-    status: Literal["queued"]
-    message: str
-
-
-class PendingResponse(BaseModel):
-    analysis_id: str
-    status: Literal["queued", "running"]
-
-
-class AudioQuality(BaseModel):
     status: str
-    speech_seconds: float
-    notes: list[str]
+    risk_score: Optional[int] = None
+    risk_level: Optional[str] = None
+    synthetic_speech_probability: Optional[float] = None
+    model_confidence: Optional[float] = None
+    audio_quality: Optional[AudioQualitySchema] = None
+    evidence: Optional[EvidenceSchema] = None
+    recommendation: Optional[str] = None
+    versions: Optional[VersionsSchema] = None
+    processing_time_ms: Optional[int] = None
+    disclaimer: Optional[str] = None
+    error: Optional[JobErrorSchema] = None
+    aegis: Optional[dict] = None
+    voiceprint_sha256: Optional[str] = None
+    primary_risk_score: Optional[int] = None
+    secondary_risk_score: Optional[int] = None
+    salt_base64: Optional[str] = None
+    dpdpVault: Optional[dict] = None
 
-
-class CompletedResponse(BaseModel):
-    analysis_id: str
-    status: Literal["completed"]
-    risk_score: int = Field(ge=0, le=100)
-    risk_level: Literal["LOW", "MEDIUM", "HIGH"]
-    synthetic_speech_probability: float = Field(ge=0, le=1)
-    model_confidence: float | None = Field(default=None, ge=0, le=1)
-    audio_quality: AudioQuality
-    evidence: dict[str, str]
-    recommendation: str
-    versions: Versions
-    processing_time_ms: int
-    disclaimer: str
-
-
-class FailedResponse(BaseModel):
-    analysis_id: str
-    status: Literal["failed"]
-    error: ErrorDetail
-
-
-class HealthResponse(BaseModel):
-    status: Literal["ok"]
-    versions: Versions
+    model_config = ConfigDict(exclude_none=True)

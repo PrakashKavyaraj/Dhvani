@@ -1,39 +1,124 @@
-from __future__ import annotations
-
-import os
-from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-def _int_env(name: str, default: int) -> int:
-    try:
-        return int(os.getenv(name, str(default)))
-    except ValueError:
-        return default
+class Settings(BaseSettings):
+    # Upload & Audio Constraints
+    MAX_UPLOAD_SIZE_MB: int = 20
+    MAX_DURATION_SECONDS: float = 120.0
+    MIN_DURATION_SECONDS: float = 2.0
+    MIN_SPEECH_SECONDS: float = 1.0
+    TEMP_AUDIO_DIR: str = "data/temp"
+    ANALYSIS_RECORDS_PATH: str = "data/analysis_records.json"
+    ALERTS_OUTBOX_PATH: str = "data/alerts_outbox.json"
+    WORKFLOW_RULES_PATH: str = "data/workflow_rules.json"
+    AEGIS_WEBHOOK_URL: str = "http://127.0.0.1:8000/api/v1/alerts/mock-webhook"
 
+    # Integration Versions
+    MODEL_VERSION: str = "baseline-v1"
+    PREPROCESSING_VERSION: str = "v1"
+    RISK_POLICY_VERSION: str = "v1"
 
-@dataclass
-class Settings:
-    max_upload_size_mb: int = _int_env("MAX_UPLOAD_SIZE_MB", 20)
-    max_duration_seconds: int = _int_env("MAX_DURATION_SECONDS", 120)
-    min_duration_seconds: int = _int_env("MIN_DURATION_SECONDS", 2)
-    min_speech_seconds: float = float(os.getenv("MIN_SPEECH_SECONDS", "1"))
-    temp_audio_dir: Path = Path(os.getenv("TEMP_AUDIO_DIR", "data/temp"))
-    model_version: str = os.getenv("MODEL_VERSION", "baseline-v1")
-    detector_backend: str = os.getenv("DETECTOR_BACKEND", "dummy").lower()
-    detector_model_id: str = os.getenv("DETECTOR_MODEL_ID", "Vansh180/deepfake-audio-wav2vec2")
-    detector_spoof_label: str = os.getenv("DETECTOR_SPOOF_LABEL", "spoof").lower()
-    detector_spoof_label_index: int = _int_env("DETECTOR_SPOOF_LABEL_INDEX", 1)
-    detector_target_sample_rate: int = _int_env("DETECTOR_TARGET_SAMPLE_RATE", 16000)
-    model_cache_dir: Path = Path(os.getenv("MODEL_CACHE_DIR", "data/model-cache"))
-    preprocessing_version: str = os.getenv("PREPROCESSING_VERSION", "v1")
-    risk_policy_version: str = os.getenv("RISK_POLICY_VERSION", "v1")
-    low_risk_max: int = _int_env("LOW_RISK_MAX", 39)
-    medium_risk_max: int = _int_env("MEDIUM_RISK_MAX", 69)
+    # M1 Detector Settings
+    DETECTOR_BACKEND: str = "dummy"  # "dummy" or "transformers"
+    DETECTOR_MODEL_ID: str = "Vansh180/deepfake-audio-wav2vec2"
+    DETECTOR_SPOOF_LABEL: str = "spoof"
+    DETECTOR_SPOOF_LABEL_INDEX: int = 1
+    DETECTOR_TARGET_SAMPLE_RATE: int = 16000
+    MODEL_CACHE_DIR: str = "data/model-cache"
+
+    # M5 Risk Thresholds
+    LOW_RISK_MAX: int = 39
+    MEDIUM_RISK_MAX: int = 69
+
+    # Legal / Non-Forensic Disclaimer
+    DISCLAIMER_TEXT: str = (
+        "This is a probabilistic risk estimate based on audio characteristics. "
+        "It is not proof of fraud, identity, authorship, or authenticity. "
+        "Elevated-risk results require independent secondary verification."
+    )
+
+    # AEGIS Engine Settings
+    AEGIS_ENABLED: bool = True
+    AEGIS_AASIST_PATH: str = "AEGIS_INTEGRATION/aasist/models/weights/AASIST-L.pth"
+    AEGIS_FORENSICS_03B_PATH: str = "models/weights/forensics_0.3B_base.safetensors"
+    AEGIS_ECAPA_CACHE_DIR: str = "models/cache/spkrec-ecapa-voxceleb"
+    AEGIS_SPEAKER_PROFILE_PATH: str = "AEGIS_INTEGRATION/weights/speaker_profile.pt"
+    AEGIS_DEVICE: str = "cpu"
+
+    # Security Engine & Cryptographic Secrets
+    VOICE_SALT: str = "DHVANI_VOICE_TOKEN_SALT_V5"
+    AUDIT_SECRET: str = "DHVANI_AUDIT_SIGNING_KEY_V5"
+    SESSION_TTL_SECONDS: int = 3600  # 1 hour in-memory session drift TTL
+    SECURE_MEMORY_WIPE: bool = True
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
     @property
-    def max_upload_bytes(self) -> int:
-        return self.max_upload_size_mb * 1024 * 1024
+    def max_upload_size_bytes(self) -> int:
+        return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+
+    @property
+    def temp_audio_path(self) -> Path:
+        path = Path(self.TEMP_AUDIO_DIR)
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def analysis_records_path(self) -> Path:
+        p = Path(self.ANALYSIS_RECORDS_PATH)
+        if not p.is_absolute():
+            return Path(__file__).resolve().parent.parent.parent / p
+        return p
+
+    @property
+    def alerts_outbox_path(self) -> Path:
+        p = Path(self.ALERTS_OUTBOX_PATH)
+        if not p.is_absolute():
+            return Path(__file__).resolve().parent.parent.parent / p
+        return p
+
+    @property
+    def workflow_rules_path(self) -> Path:
+        p = Path(self.WORKFLOW_RULES_PATH)
+        if not p.is_absolute():
+            return Path(__file__).resolve().parent.parent.parent / p
+        return p
+
+    @property
+    def aegis_aasist_path(self) -> Path:
+        p = Path(self.AEGIS_AASIST_PATH)
+        if not p.is_absolute():
+            return Path(__file__).resolve().parent.parent.parent / p
+        return p
+
+    @property
+    def aegis_forensics_path(self) -> Path:
+        p = Path(self.AEGIS_FORENSICS_03B_PATH)
+        if not p.is_absolute():
+            return Path(__file__).resolve().parent.parent.parent / p
+        return p
+
+    @property
+    def aegis_speaker_profile_path(self) -> Path:
+        p = Path(self.AEGIS_SPEAKER_PROFILE_PATH)
+        if not p.is_absolute():
+            return Path(__file__).resolve().parent.parent.parent / p
+        return p
+
+    @property
+    def aegis_ecapa_cache_dir(self) -> Path:
+        p = Path(self.AEGIS_ECAPA_CACHE_DIR)
+        if not p.is_absolute():
+            return Path(__file__).resolve().parent.parent.parent / p
+        return p
 
 
-settings = Settings()
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    return Settings()
