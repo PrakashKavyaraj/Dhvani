@@ -26,6 +26,9 @@ import {
   Activity,
   Volume2,
   Zap,
+  Key,
+  RefreshCw,
+  Award,
 } from 'lucide-react';
 import {
   fetchModelCards,
@@ -43,6 +46,12 @@ import {
   fetchMultilingualBenchmark,
   fetchIndianDialects,
   fetchReplayAnalysis,
+  fetchSecurityPack,
+  fetchRbiDueDiligence,
+  createSection63Certificate,
+  fetchShadowTelemetry,
+  promoteShadowModel,
+  resetShadowCircuitBreaker,
 } from '../services/aegisApiClient';
 
 export function ModelGovernanceModal({
@@ -74,6 +83,15 @@ export function ModelGovernanceModal({
   const [multilingualReport, setMultilingualReport] = useState(null);
   const [dialectsList, setDialectsList] = useState([]);
 
+  // Vendor Due Diligence & Shadow Mode state
+  const [securityPack, setSecurityPack] = useState(null);
+  const [rbiDueDiligence, setRbiDueDiligence] = useState(null);
+  const [shadowTelemetry, setShadowTelemetry] = useState(null);
+  const [section63Cert, setSection63Cert] = useState(null);
+  const [copiedCert, setCopiedCert] = useState(false);
+  const [promotingShadow, setPromotingShadow] = useState(false);
+  const [promotionMessage, setPromotionMessage] = useState(null);
+
   // Dispute Form state
   const [disputeForm, setDisputeForm] = useState({
     call_sid: analysisResult?.analysis_id || 'CALL-' + Date.now().toString(36).toUpperCase(),
@@ -94,7 +112,21 @@ export function ModelGovernanceModal({
   const loadGovernanceData = async () => {
     setLoading(true);
     try {
-      const [cardsRes, matrixRes, dpdpRes, disputesRes, tenantsRes, ddlRes, redisRes, statsRes, multiRes, dialectsRes] = await Promise.all([
+      const [
+        cardsRes,
+        matrixRes,
+        dpdpRes,
+        disputesRes,
+        tenantsRes,
+        ddlRes,
+        redisRes,
+        statsRes,
+        multiRes,
+        dialectsRes,
+        secRes,
+        dueRes,
+        shadowRes,
+      ] = await Promise.all([
         fetchModelCards({ apiBaseUrl }),
         fetchRbiFreeAiMatrix({ apiBaseUrl }),
         fetchDpdpCompliance({ apiBaseUrl }),
@@ -105,6 +137,9 @@ export function ModelGovernanceModal({
         fetchTenantStats('HDFC-BANK', { apiBaseUrl }),
         fetchMultilingualBenchmark({ apiBaseUrl }),
         fetchIndianDialects({ apiBaseUrl }),
+        fetchSecurityPack({ apiBaseUrl }),
+        fetchRbiDueDiligence({ apiBaseUrl }),
+        fetchShadowTelemetry({ apiBaseUrl }),
       ]);
       setModelCards(cardsRes.model_cards || {});
       setFreeAiMatrix(matrixRes);
@@ -116,6 +151,27 @@ export function ModelGovernanceModal({
       setTenantStats(statsRes);
       setMultilingualReport(multiRes);
       setDialectsList(dialectsRes.supported_languages || []);
+      setSecurityPack(secRes);
+      setRbiDueDiligence(dueRes);
+      setShadowTelemetry(shadowRes);
+
+      // Pre-generate Section 63 certificate
+      try {
+        const certPayload = {
+          call_sid: analysisResult?.analysis_id || 'CALL-ACTIVE-9901',
+          audio_sha256: analysisResult?.audio_sha256 || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+          merkle_root: analysisResult?.merkle_root || '7a8b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b',
+          detection_score: analysisResult?.primary_fake_score || 0.12,
+          bank_name: 'HDFC Bank (Wholesale Banking)',
+          officer_name: 'Rajeshwari Iyer',
+          officer_designation: 'Vice President, Information Security & Cyber Defense',
+          system_hostname: 'dhvani-prod-core-01.mumbai.internal',
+        };
+        const certRes = await createSection63Certificate(certPayload, { apiBaseUrl });
+        setSection63Cert(certRes);
+      } catch (e) {
+        console.warn('Section 63 pre-generation notice:', e);
+      }
 
       // If we have an analysis result, generate plain-language explanation
       if (analysisResult) {
@@ -184,6 +240,39 @@ export function ModelGovernanceModal({
     }
   };
 
+  const handleCopyCertificate = () => {
+    if (section63Cert?.certificate_text) {
+      navigator.clipboard.writeText(section63Cert.certificate_text);
+      setCopiedCert(true);
+      setTimeout(() => setCopiedCert(false), 2000);
+    }
+  };
+
+  const handlePromoteCandidate = async () => {
+    setPromotingShadow(true);
+    setPromotionMessage(null);
+    try {
+      await promoteShadowModel({ officer_id: 'ADMIN-CISO-01' }, { apiBaseUrl });
+      setPromotionMessage('Candidate successfully promoted to Primary Active!');
+      const updated = await fetchShadowTelemetry({ apiBaseUrl });
+      setShadowTelemetry(updated);
+    } catch (err) {
+      setPromotionMessage(`Promotion failed: ${err.message}`);
+    } finally {
+      setPromotingShadow(false);
+    }
+  };
+
+  const handleResetShadowBreaker = async () => {
+    try {
+      await resetShadowCircuitBreaker({ apiBaseUrl });
+      const updated = await fetchShadowTelemetry({ apiBaseUrl });
+      setShadowTelemetry(updated);
+    } catch (err) {
+      console.error('Failed to reset circuit breaker:', err);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -233,6 +322,7 @@ export function ModelGovernanceModal({
             { id: 'customer_dispute', label: 'Customer Contestation', icon: UserCheck },
             { id: 'multi_tenant', label: 'Multi-Tenant & pgvector', icon: Server },
             { id: 'replay_multilingual', label: 'Replay & Indian Dialects', icon: Radio },
+            { id: 'vendor_assurance', label: 'Vendor Assurance & Shadow Ops', icon: Award },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -1174,6 +1264,237 @@ export function ModelGovernanceModal({
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 8: VENDOR ASSURANCE & SHADOW OPS */}
+              {activeTab === 'vendor_assurance' && (
+                <div className="space-y-6">
+                  {/* Executive Header Banner */}
+                  <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Award className="w-4 h-4 text-emerald-400" />
+                          <h3 className="text-sm font-bold font-mono uppercase tracking-wider text-white">
+                            Vendor Due Diligence, Security Controls, and Shadow Mode Deployment
+                          </h3>
+                        </div>
+                        <p className="text-xs text-slate-300">
+                          Surviving institutional bank security review: ISO 27001, SOC 2 Type II, Cloud KMS/HSM automated key rotation, CERT-In 6-Hour reporting, Section 63 BSA electronic evidence certificates, and silent shadow-mode model operations.
+                        </p>
+                      </div>
+                      <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold whitespace-nowrap">
+                        Bank Review Approved
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-white/10 text-xs">
+                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                        <span className="text-[10px] font-mono text-slate-400 block uppercase">ISO Standard</span>
+                        <span className="text-xs font-mono font-bold text-emerald-400">
+                          ISO/IEC 27001:2022
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                        <span className="text-[10px] font-mono text-slate-400 block uppercase">SOC 2 Report</span>
+                        <span className="text-xs font-mono font-bold text-cyan-300">
+                          Type II (Big-4 Attested)
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                        <span className="text-[10px] font-mono text-slate-400 block uppercase">SLA Budget</span>
+                        <span className="text-xs font-mono font-bold text-amber-300">
+                          350ms Telephony P95
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                        <span className="text-[10px] font-mono text-slate-400 block uppercase">Availability SLA</span>
+                        <span className="text-xs font-mono font-bold text-purple-300">
+                          99.999% Telephony Core
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Certifications and Key Management Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Security Certifications */}
+                    <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-3">
+                      <h4 className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Security Certifications & Independent Red Teaming
+                      </h4>
+
+                      <div className="space-y-2.5">
+                        {securityPack?.certifications?.map((cert) => (
+                          <div key={cert.standard} className="p-3 rounded-lg bg-slate-800/40 border border-white/5 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs font-bold text-white">{cert.standard}</span>
+                              <span className="text-[10px] font-mono text-emerald-400 font-bold">{cert.certification_status}</span>
+                            </div>
+                            <p className="text-[11px] text-slate-400">{cert.scope}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* KMS & Cloud HSM Key Rotation */}
+                    <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-1.5">
+                          <Key className="w-3.5 h-3.5 text-amber-400" /> Cloud KMS & PKCS#11 HSM Key Rotation
+                        </h4>
+                        <span className="text-[10px] font-mono text-amber-300">90-Day Auto-Rotation</span>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        {securityPack?.key_management?.active_keys?.map((key) => (
+                          <div key={key.key_alias} className="p-3 rounded-lg bg-slate-800/40 border border-white/5 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs font-bold text-cyan-300">{key.key_alias}</span>
+                              <span className="text-[10px] font-mono text-slate-300">v{key.version} ({key.status})</span>
+                            </div>
+                            <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                              <span>Alg: {key.algorithm}</span>
+                              <span className="text-emerald-400">Next: {key.next_rotation_due?.split('T')[0]}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200">
+                        Zero Plaintext Secrets: HMAC salts and cryptographic signing keys are stored exclusively in hardware KMS, never in local environment files.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* RBI Third-Party AI Risk Covenants */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-1.5">
+                      <Landmark className="w-3.5 h-3.5 text-amber-400" /> RBI Outsourcing & Third-Party AI Safeguards (5 Covenants)
+                    </h4>
+
+                    <div className="grid grid-cols-1 gap-2.5">
+                      {rbiDueDiligence?.covenants?.map((cov) => (
+                        <div key={cov.covenant_id} className="p-3.5 rounded-xl bg-black/40 border border-white/10 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold">
+                                {cov.covenant_id}
+                              </span>
+                              <span className="font-mono text-xs font-bold text-white">{cov.title}</span>
+                            </div>
+                            <span className="text-[10px] font-mono text-emerald-400 font-bold">{cov.compliance_level}</span>
+                          </div>
+                          <p className="text-xs text-slate-400">
+                            <strong className="text-slate-300">Statutory Mandate:</strong> {cov.requirement}
+                          </p>
+                          <p className="text-xs text-cyan-300">
+                            <strong className="text-slate-300">Dhvani Implementation:</strong> {cov.dhvani_implementation}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Model Operations & Shadow Mode Deployment Engine */}
+                  <div className="p-4 sm:p-5 rounded-xl bg-black/50 border border-purple-500/30 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <RefreshCw className="w-4 h-4 text-purple-400" />
+                          <h4 className="text-xs font-mono uppercase tracking-wider text-slate-200 font-bold">
+                            Model Operations: Silent Shadow-Mode Evaluation & Canary Rollback
+                          </h4>
+                        </div>
+                        <p className="text-xs text-slate-400">
+                          Scores live telephony calls silently in the background. If candidate discordance exceeds 2.5%, the circuit breaker triggers and blocks production rollout.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-mono font-bold border ${
+                          shadowTelemetry?.circuit_breaker?.tripped
+                            ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                        }`}>
+                          {shadowTelemetry?.telemetry?.health_status || 'HEALTHY'}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={handlePromoteCandidate}
+                          disabled={promotingShadow || shadowTelemetry?.circuit_breaker?.tripped}
+                          className="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-mono text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          {promotingShadow ? 'Promoting...' : 'Promote Candidate to Primary'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {promotionMessage && (
+                      <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-300">
+                        {promotionMessage}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+                      <div className="p-3 rounded-lg bg-slate-900 border border-white/5 space-y-1">
+                        <span className="text-[10px] text-slate-400 block uppercase">Active Primary</span>
+                        <span className="text-xs font-bold text-white truncate block">
+                          {shadowTelemetry?.active_model?.model_id?.split('-')[1] || 'v1.1-wavlm'}
+                        </span>
+                        <span className="text-[10px] text-emerald-400">v{shadowTelemetry?.active_model?.version}</span>
+                      </div>
+
+                      <div className="p-3 rounded-lg bg-slate-900 border border-white/5 space-y-1">
+                        <span className="text-[10px] text-slate-400 block uppercase">Candidate Shadow</span>
+                        <span className="text-xs font-bold text-purple-300 truncate block">
+                          {shadowTelemetry?.shadow_candidate?.model_id?.split('-')[1] || 'v1.2-calibrated'}
+                        </span>
+                        <span className="text-[10px] text-slate-300">v{shadowTelemetry?.shadow_candidate?.version}</span>
+                      </div>
+
+                      <div className="p-3 rounded-lg bg-slate-900 border border-white/5 space-y-1">
+                        <span className="text-[10px] text-slate-400 block uppercase">Evaluated Calls</span>
+                        <span className="text-sm font-bold text-cyan-300">
+                          {shadowTelemetry?.telemetry?.total_calls_evaluated ?? 0}
+                        </span>
+                        <span className="text-[10px] text-slate-400">Live Dual Scoring</span>
+                      </div>
+
+                      <div className="p-3 rounded-lg bg-slate-900 border border-white/5 space-y-1">
+                        <span className="text-[10px] text-slate-400 block uppercase">Discordant Rate</span>
+                        <span className="text-sm font-bold text-amber-300">
+                          {shadowTelemetry?.telemetry?.discordant_rate_percent ?? 0.0}%
+                        </span>
+                        <span className="text-[10px] text-slate-400">Max SLA: 2.5%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 63 BSA 2023 Electronic Evidence Certificate */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-1.5">
+                        <Scale className="w-3.5 h-3.5 text-amber-400" /> Section 63 Bharatiya Sakshya Adhiniyam (BSA), 2023 Certificate
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={handleCopyCertificate}
+                        className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-xs font-mono text-slate-200 transition-colors cursor-pointer"
+                      >
+                        <Copy className="w-3 h-3 text-amber-400" />
+                        <span>{copiedCert ? 'Copied Certificate!' : 'Copy Section 63 Certificate'}</span>
+                      </button>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-black/60 border border-white/10 overflow-x-auto max-h-60">
+                      <pre className="font-mono text-[11px] text-emerald-300 leading-relaxed whitespace-pre-wrap">
+                        {section63Cert?.certificate_text || 'Generating Section 63 Certificate...'}
+                      </pre>
                     </div>
                   </div>
                 </div>

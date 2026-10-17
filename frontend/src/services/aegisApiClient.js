@@ -1476,5 +1476,115 @@ export async function fetchIndianDialects(options = {}) {
   return await res.json();
 }
 
+/**
+ * Vendor Security Pack: ISO 27001, SOC 2 Type II, and Cloud KMS / HSM key rotation.
+ */
+export async function fetchSecurityPack(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/vendor/security-pack`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch vendor security pack: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * RBI Third-Party AI Due Diligence: Master Directions on Outsourcing and FREE-AI covenants.
+ */
+export async function fetchRbiDueDiligence(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/vendor/rbi-due-diligence`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch RBI due diligence: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Incident Response: Generate CERT-In (6-hour) and DPDP Board (72-hour) incident dossier.
+ */
+export async function createIncidentReport(payload, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/vendor/incident-report`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || `Failed to create incident report: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Section 63 BSA Certificate: Generate formal Certificate of Electronic Evidence.
+ */
+export async function createSection63Certificate(payload, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/vendor/section-63-certificate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || `Failed to create Section 63 certificate: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Shadow Mode Deployment: Get telemetry, drift metrics, and circuit breaker health.
+ */
+export async function fetchShadowTelemetry(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/vendor/shadow-mode/telemetry`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch shadow mode telemetry: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Shadow Mode Promotion: Promote candidate model to active primary production.
+ */
+export async function promoteShadowModel(payload = {}, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/vendor/shadow-mode/promote`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || `Failed to promote shadow model: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Shadow Mode Reset: Reset tripped circuit breaker.
+ */
+export async function resetShadowCircuitBreaker(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/vendor/shadow-mode/reset-circuit-breaker`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to reset shadow circuit breaker: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+
 
 
