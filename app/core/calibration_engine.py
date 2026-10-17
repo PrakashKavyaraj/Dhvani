@@ -47,7 +47,8 @@ class ProbabilityCalibrator:
         self,
         scale_param: float = 6.2,
         bias_param: float = -3.1,
-        prior_spoof: float = 0.05,
+        training_prior: float = 0.5,
+        prior_spoof: Optional[float] = None,
     ):
         """
         Initializes calibrator with scaling and bias parameters.
@@ -55,8 +56,19 @@ class ProbabilityCalibrator:
         """
         self.a = float(scale_param)
         self.b = float(bias_param)
-        self.prior_spoof = max(0.001, min(0.999, float(prior_spoof)))
+        # Empirical prior in development/training calibration set
+        self.training_prior = float(prior_spoof if prior_spoof is not None else training_prior)
+        self.training_prior = max(0.001, min(0.999, self.training_prior))
         self._is_fitted = True
+
+    @property
+    def prior_spoof(self) -> float:
+        """Backwards compatibility alias for training prior."""
+        return self.training_prior
+
+    @prior_spoof.setter
+    def prior_spoof(self, val: float) -> None:
+        self.training_prior = max(0.001, min(0.999, float(val)))
 
     @property
     def is_fitted(self) -> bool:
@@ -87,7 +99,7 @@ class ProbabilityCalibrator:
         single_val = isinstance(raw_scores, (int, float))
         scores_arr = np.asarray([raw_scores] if single_val else raw_scores, dtype=np.float64)
 
-        prior_odds = self.prior_spoof / (1.0 - self.prior_spoof)
+        prior_odds = self.training_prior / (1.0 - self.training_prior)
         log_prior_odds = math.log(prior_odds)
         llrs = (self.a * scores_arr + self.b) - log_prior_odds
 
@@ -102,15 +114,15 @@ class ProbabilityCalibrator:
         p_target: float = 0.01,
     ) -> float:
         """
-        Computes the optimal theoretical Bayes decision threshold on the LLR scale.
-        theta_bayes = log( (cost_fa * (1 - p_target)) / (cost_miss * p_target) )
+        Computes the optimal theoretical Bayes decision threshold on the raw score scale.
+        theta_bayes_llr = log( (cost_fa * (1 - p_target)) / (cost_miss * p_target) )
         """
         c_miss = max(0.001, cost_miss)
         c_fa = max(0.001, cost_fa)
         p_t = max(0.0001, min(0.9999, p_target))
 
         bayes_llr = math.log((c_fa * (1.0 - p_t)) / (c_miss * p_t))
-        prior_odds = self.prior_spoof / (1.0 - self.prior_spoof)
+        prior_odds = self.training_prior / (1.0 - self.training_prior)
         log_prior_odds = math.log(prior_odds)
 
         # Invert from LLR to raw score scale: s = (LLR + log_prior_odds - b) / a
@@ -125,8 +137,9 @@ class ProbabilityCalibrator:
         learning_rate: float = 0.05,
     ) -> Dict[str, float]:
         """
-        Fits logistic parameters a and b using L-BFGS-B cross-entropy minimization (Platt scaling).
+        Fits logistic parameters a and b using bounded L-BFGS-B cross-entropy minimization (Platt scaling).
         labels: 1 for spoof, 0 for bonafide.
+        Enforces a >= 1e-3 to guarantee the classifier is never inverted.
         """
         s = np.asarray(raw_scores, dtype=np.float64)
         y = np.asarray(labels, dtype=np.float64)
@@ -139,11 +152,15 @@ class ProbabilityCalibrator:
 
         def loss_fn(params):
             a_val, b_val = params
-            z = np.clip(a_val * s + b_val, -35.0, 35.0)
-            loss = np.sum(np.log1p(np.exp(-z)) + (1.0 - y) * z) / num_samples
+            z = a_val * s + b_val
+            # Numerically stable cross-entropy with logits: max(z, 0) - z*y + log(1 + exp(-|z|))
+            loss = np.sum(np.maximum(z, 0.0) - z * y + np.log1p(np.exp(-np.abs(z)))) / num_samples
             return loss + 1e-4 * (a_val ** 2 + b_val ** 2)
 
-        opt_res = optimize.minimize(loss_fn, x0=[4.0, -2.0], method="L-BFGS-B")
+        # Strictly enforce a >= 1e-3 to prevent detector inversion
+        bounds = [(1e-3, 50.0), (-50.0, 50.0)]
+        init_a = max(1.0, self.a) if self.a > 0 else 4.0
+        opt_res = optimize.minimize(loss_fn, x0=[init_a, self.b], method="L-BFGS-B", bounds=bounds)
         if opt_res.success:
             self.a = float(opt_res.x[0])
             self.b = float(opt_res.x[1])
@@ -151,18 +168,19 @@ class ProbabilityCalibrator:
             self.a = 6.2
             self.b = -3.1
 
-        self.prior_spoof = float(np.mean(y))
+        self.training_prior = float(np.clip(np.mean(y), 1e-4, 1.0 - 1e-4))
         self._is_fitted = True
 
         eval_res = self.evaluate_calibration(s, y)
         logger.info(
-            "Fitted probability calibrator | a=%.3f | b=%.3f | ECE=%.4f | Brier=%.4f",
+            "Fitted probability calibrator on development set | a=%.3f | b=%.3f | training_prior=%.3f | DevECE=%.4f | DevBrier=%.4f",
             self.a,
             self.b,
+            self.training_prior,
             eval_res["ece"],
             eval_res["brier"],
         )
-        return {"a": self.a, "b": self.b, **eval_res}
+        return {"a": self.a, "b": self.b, "training_prior": self.training_prior, **eval_res}
 
     def evaluate_calibration(
         self,

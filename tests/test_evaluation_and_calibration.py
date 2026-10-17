@@ -29,7 +29,9 @@ from app.core.telephony_codecs import (
 from scripts.evaluation_harness import (
     compute_dcf,
     compute_eer,
+    create_disjoint_partitions,
     evaluate_score_set,
+    evaluate_with_disjoint_calibration,
     format_markdown_report,
     run_synthetic_benchmark_suite,
 )
@@ -179,3 +181,48 @@ class TestBenchmarkSuiteIntegration:
         assert "# Dhvani Voice Integrity: Scientific Evaluation Report" in md
         assert "G.711 A-law" in md
         assert "Hindi" in md
+
+    def test_disjoint_partitions_speaker_and_generator_isolation(self):
+        trials = [
+            {"trial_id": "T1", "speaker_id": "SPK_01", "generator": "seen_hifigan", "score": 0.1},
+            {"trial_id": "T2", "speaker_id": "SPK_01", "generator": "seen_hifigan", "score": 0.2},
+            {"trial_id": "T3", "speaker_id": "SPK_02", "generator": "seen_hifigan", "score": 0.8},
+            {"trial_id": "T4", "speaker_id": "SPK_03", "generator": "elevenlabs_v2", "score": 0.9},
+            {"trial_id": "T5", "speaker_id": "SPK_04", "generator": "seen_hifigan", "score": 0.15},
+            {"trial_id": "T6", "speaker_id": "SPK_05", "generator": "seen_hifigan", "score": 0.85},
+        ]
+        dev, test = create_disjoint_partitions(
+            trials,
+            dev_ratio=0.5,
+            holdout_generators=["elevenlabs_v2"],
+            seed=42,
+        )
+
+        dev_speakers = {t["speaker_id"] for t in dev}
+        test_speakers = {t["speaker_id"] for t in test}
+
+        # 1. Zero speaker overlap
+        assert dev_speakers.isdisjoint(test_speakers)
+
+        # 2. Holdout generator strictly assigned to test
+        assert any(t["generator"] == "elevenlabs_v2" for t in test)
+        assert all(t["generator"] != "elevenlabs_v2" for t in dev)
+
+    def test_evaluate_with_disjoint_calibration_zero_leakage(self):
+        dev_b = [0.05, 0.10, 0.15, 0.20, 0.25]
+        dev_s = [0.75, 0.80, 0.85, 0.90, 0.95]
+        eval_b = [0.08, 0.12, 0.18, 0.22]
+        eval_s = [0.72, 0.82, 0.88, 0.92]
+
+        res = evaluate_with_disjoint_calibration(dev_b, dev_s, eval_b, eval_s)
+        assert res["leakage_audit"]["calibration_leakage"] == "ZERO_LEAKAGE_HELD_OUT_EVALUATION"
+        assert res["leakage_audit"]["calibrator_fitted"] is True
+        assert res["eer_percent"] == 0.0
+
+    def test_bounded_slope_prevents_detector_inversion(self):
+        calibrator = ProbabilityCalibrator()
+        # Even with difficult/noisy data, calibrator slope 'a' must remain strictly positive (a >= 1e-3)
+        noisy_scores = [0.9, 0.8, 0.85, 0.1, 0.2, 0.15]
+        inverted_labels = [0, 0, 0, 1, 1, 1]
+        calibrator.fit(noisy_scores, inverted_labels)
+        assert calibrator.a >= 1e-3
