@@ -42,8 +42,9 @@ import { EdgeDefenseCard } from './dashboard/EdgeDefenseCard';
 import { CyberCrimeDocketModal } from './CyberCrimeDocketModal';
 import { InterBankFederationModal } from './InterBankFederationModal';
 import { DeveloperSandboxModal } from './DeveloperSandboxModal';
+import { ModelGovernanceModal } from './ModelGovernanceModal';
 import { LiquidMetalButton } from '@/components/ui/liquid-metal-button';
-import { CreditCard, Zap, Users, Skull, Scale, Headphones, FileText, Globe, Code } from 'lucide-react';
+import { CreditCard, Zap, Users, Skull, Scale, Headphones, FileText, Globe, Code, Landmark } from 'lucide-react';
 
 // Comprehensive Diagnostic Explanation Knowledge Base for Telemetry Cards
 export const EVIDENCE_EXPLANATIONS = {
@@ -466,6 +467,7 @@ export function AegisAnalysisResult({
   const [isDocketModalOpen, setIsDocketModalOpen] = useState(false);
   const [isFederationModalOpen, setIsFederationModalOpen] = useState(false);
   const [isSandboxModalOpen, setIsSandboxModalOpen] = useState(false);
+  const [isGovernanceModalOpen, setIsGovernanceModalOpen] = useState(false);
   const [showSpectrogram, setShowSpectrogram] = useState(true);
   const [transferStatus, setTransferStatus] = useState('IDLE'); // 'IDLE', 'SUCCESS', 'VERIFIED_RELEASED'
   const [transferAudit, setTransferAudit] = useState(null);
@@ -843,6 +845,16 @@ export function AegisAnalysisResult({
             >
               <Code className="w-3.5 h-3.5 text-emerald-400" />
               <span>💻 SDK Sandbox</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsGovernanceModalOpen(true)}
+              className="py-2.5 px-3 rounded-xl font-mono font-semibold text-xs flex items-center justify-center space-x-1.5 transition-all bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 border border-amber-500/40 hover:border-amber-400 cursor-pointer shadow-md"
+              title="RBI FREE-AI & Model Risk Governance (26 Recommendations & Model Cards)"
+            >
+              <Landmark className="w-3.5 h-3.5 text-amber-400" />
+              <span>🏛️ Governance</span>
             </button>
 
             <button
@@ -1226,6 +1238,14 @@ export function AegisAnalysisResult({
       <DeveloperSandboxModal
         isOpen={isSandboxModalOpen}
         onClose={() => setIsSandboxModalOpen(false)}
+        apiBaseUrl={apiBaseUrl}
+      />
+
+      {/* RBI FREE-AI & Model Risk Governance Modal */}
+      <ModelGovernanceModal
+        isOpen={isGovernanceModalOpen}
+        onClose={() => setIsGovernanceModalOpen(false)}
+        analysisResult={result}
         apiBaseUrl={apiBaseUrl}
       />
     </motion.div>

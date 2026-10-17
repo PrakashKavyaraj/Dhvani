@@ -1256,3 +1256,91 @@ export async function executeSandboxTest(scenario, options = {}) {
   return await res.json();
 }
 
+/**
+ * Model Governance & Risk Management: Fetch model cards.
+ */
+export async function fetchModelCards(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/governance/model-cards`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch model cards: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Model Governance: Fetch RBI FREE-AI 26-recommendation matrix.
+ */
+export async function fetchRbiFreeAiMatrix(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/governance/rbi-free-ai`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch RBI FREE-AI matrix: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Model Governance: Fetch DPDP Act 2023 & Rules 2025 compliance profile.
+ */
+export async function fetchDpdpCompliance(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/governance/dpdp-compliance`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch DPDP compliance profile: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Model Governance: Generate plain-language explainability narrative.
+ */
+export async function fetchExplainVerdict(payload, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/governance/explain-verdict`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || `Failed to explain verdict: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Model Governance: Submit customer dispute under FREE-AI Pillar 4.
+ */
+export async function submitCustomerDispute(payload, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/governance/customer-dispute`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || `Dispute registration failed: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Model Governance: Fetch registered customer disputes.
+ */
+export async function fetchCustomerDisputes(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/governance/customer-disputes`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch customer disputes: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
