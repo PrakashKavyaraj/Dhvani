@@ -126,7 +126,7 @@ export function CyberCrimeDocketModal({
                   Cyber Crime FIR & Regulatory Evidence Docket Generator
                 </h2>
                 <span className="px-2 py-0.5 text-xs font-semibold rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/40">
-                  Section 66D IT Act / BNS 318-319
+                  Assisted Draft (Human Review Required)
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -143,8 +143,16 @@ export function CyberCrimeDocketModal({
           </button>
         </div>
 
+        {/* Compliance & Legal Disclaimer Warning */}
+        <div className="mx-6 mt-3 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+          <span>
+            <strong>Assisted Complaint Draft:</strong> This automated dossier assists authorized bank reporting officers. It does not constitute legal counsel and must be independently verified by institutional compliance and legal counsel before formal submission.
+          </span>
+        </div>
+
         {/* Status & Reference Banner */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-6 py-3 bg-slate-950/40 border-b border-slate-800 text-xs">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-6 py-3 bg-slate-950/40 border-b border-slate-800 text-xs mt-3">
           <div>
             <span className="text-slate-400 block font-mono">DOCKET REFERENCE</span>
             <span className="font-semibold text-rose-300 font-mono">{docket?.docket_id || 'Generating...'}</span>
@@ -154,8 +162,8 @@ export function CyberCrimeDocketModal({
             <span className="font-semibold text-emerald-400">₹{(docket?.averted_amount_inr || attemptedAmount).toLocaleString('en-IN')}.00</span>
           </div>
           <div>
-            <span className="text-slate-400 block font-mono">EVIDENTIARY CERTIFICATION</span>
-            <span className="font-semibold text-slate-200">Sec 63 BSA 2023 / Sec 65B</span>
+            <span className="text-slate-400 block font-mono">EVIDENTIARY AUDIT CHAIN</span>
+            <span className="font-semibold text-slate-200">Tamper-Evident SHA-256 (BSA Sec 63)</span>
           </div>
           <div>
             <span className="text-slate-400 block font-mono">DPDP ACT PRIVACY SEAL</span>

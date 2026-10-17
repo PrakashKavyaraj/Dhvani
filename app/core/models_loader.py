@@ -25,6 +25,7 @@ _aegis_dir = Path(__file__).resolve().parent.parent.parent / "AEGIS_INTEGRATION"
 if str(_aegis_dir) not in sys.path:
     sys.path.insert(0, str(_aegis_dir))
 
+from app.core.calibration_engine import calibration_engine
 from app.core.config import get_settings
 from app.core.security_engine import security_engine
 from app.integrations.aegis_adapter import get_aegis_engine
@@ -182,6 +183,12 @@ def run_streaming_inference(
             if primary_fake_prob is not None
             else round(persistent_spoof, 4)
         ),
+        "calibrated_probability": round(
+            float(calibration_engine.calibrate(primary_fake_prob or persistent_spoof)), 4
+        ),
+        "bayes_log_likelihood_ratio": round(
+            float(calibration_engine.score_to_llr(primary_fake_prob or persistent_spoof)), 4
+        ),
         "primary_fake_prob": primary_fake_prob,
         "raw_aasist_score": round(current_spoof, 4),
         "speaker_similarity": (
@@ -212,6 +219,6 @@ def run_streaming_inference(
             "rawBytesPersisted": 0,
             "voiceToken": voice_token,
             "auditHmac": audit_hmac,
-            "complianceRule": "Section 8(7) DPDP Act 2023 • TRAI TCCCPR Guidelines",
+            "complianceRule": "DPDP Act 2023 Sec 8(7) • DPDP Rules 2025 Rule 8(3) • TRAI TCCCPR Guidelines",
         },
     }

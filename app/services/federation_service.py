@@ -145,6 +145,8 @@ class InterBankFederationService:
         return {
             "status": "FEDERATION_OPERATIONAL",
             "protocol_version": "FTX-V1.4-DPDP",
+            "topology_mode": "SIMULATED_TEST_TOPOLOGY",
+            "environment_notice": "Simulation sandbox for evaluating inter-bank threat propagation protocols.",
             "participating_banks_count": len(self._members),
             "total_losses_averted_inr": total_averted,
             "total_active_bulletins": len(self._bulletins),

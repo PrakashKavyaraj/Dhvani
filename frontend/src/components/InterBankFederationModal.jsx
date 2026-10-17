@@ -101,7 +101,7 @@ export function InterBankFederationModal({
                   Inter-Bank Fraud Syndicate Federation
                 </h2>
                 <span className="px-2 py-0.5 text-xs font-semibold rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-                  Federated Threat Exchange (FTX)
+                  Simulated Network Topology (Sandbox)
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -118,13 +118,24 @@ export function InterBankFederationModal({
           </button>
         </div>
 
+        {/* Simulation Sandbox Notice */}
+        <div className="mx-6 mt-3 px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-cyan-400" />
+            <span>
+              <strong>Simulated Network Topology:</strong> Evaluating multi-bank cross-syndicate threat protocol. Real-world federation requires bilateral institutional data-sharing agreements.
+            </span>
+          </div>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-200 uppercase">Sandbox Mode</span>
+        </div>
+
         {/* Macro Federation Stats Banner */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-6 py-3 bg-slate-950/40 border-b border-slate-800 text-xs">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-6 py-3 bg-slate-950/40 border-b border-slate-800 text-xs mt-3">
           <div>
             <span className="text-slate-400 block font-mono">FEDERATION STATUS</span>
             <span className="font-semibold text-emerald-400 flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              OPERATIONAL ({stats?.protocol_version || 'FTX-V1.4'})
+              SIMULATED ({stats?.protocol_version || 'FTX-V1.4'})
             </span>
           </div>
           <div>

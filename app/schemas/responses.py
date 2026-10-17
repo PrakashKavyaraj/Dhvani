@@ -41,6 +41,8 @@ class AnalysisStatusResponse(BaseModel):
     risk_score: Optional[int] = None
     risk_level: Optional[str] = None
     synthetic_speech_probability: Optional[float] = None
+    calibrated_probability: Optional[float] = None
+    bayes_log_likelihood_ratio: Optional[float] = None
     model_confidence: Optional[float] = None
     audio_quality: Optional[AudioQualitySchema] = None
     evidence: Optional[EvidenceSchema] = None

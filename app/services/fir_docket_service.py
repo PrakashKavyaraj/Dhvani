@@ -74,8 +74,10 @@ class FIRDocketService:
         vocoder_family = vocoder_info.get("family_name", "HiFi-GAN (Multi-Period Discriminator GAN)")
         threat_level = "CRITICAL_FRAUD" if synth_prob >= 0.70 else "SUSPICIOUS_ATTEMPT"
 
-        # Formal Police Narrative
+        # Formal Police Narrative (Assisted Draft)
         police_narrative = (
+            f"[ASSISTED DRAFT COMPLAINT - FOR BANK OFFICER REVIEW ONLY - NOT FORMAL LEGAL ADVICE]\n"
+            f"[MANDATORY COMPLIANCE NOTICE: Must be reviewed and verified by institutional legal counsel before police submission]\n\n"
             f"TO: The Officer-in-Charge / Superintendent of Police, Cyber Crime Police Station.\n\n"
             f"SUBJECT: FORMAL FIRST INFORMATION REPORT (FIR) COMPLAINT REGARDING ATTEMPTED HIGH-VALUE FINANCIAL "
             f"FRAUD AND CRIMINAL CHEATING BY PERSONATION USING ARTIFICIAL INTELLIGENCE SYNTHETIC VOICE CLONING (DEEPFAKE).\n\n"
@@ -83,7 +85,7 @@ class FIRDocketService:
             f"1. Section 66D, Information Technology Act, 2000 (Cheating by personation using computer resource)\n"
             f"2. Section 318 & 319, Bharatiya Nyaya Sanhita (BNS), 2023 (Cheating and personation)\n"
             f"3. Section 61, Bharatiya Nyaya Sanhita (BNS), 2023 (Criminal conspiracy)\n"
-            f"4. Section 63, Bharatiya Sakshya Adhiniyam (BSA), 2023 (Admissibility of electronic record)\n\n"
+            f"4. Section 63, Bharatiya Sakshya Adhiniyam (BSA), 2023 (Tamper-evident electronic record chain)\n\n"
             f"COMPLAINANT INSTITUTION: {bank_name}, Branch Code: {branch_code}.\n"
             f"REPORTING OFFICER: {nodal_officer_name}, {nodal_officer_title}.\n"
             f"DATE & TIME OF OCCURRENCE: {now.strftime('%d-%B-%Y %H:%M:%S UTC')}.\n\n"
@@ -102,7 +104,7 @@ class FIRDocketService:
             f"CRYPTOGRAPHIC EVIDENCE RECORD:\n"
             f"- Volatile Ephemeral Audio SHA-256 Digest: {audio_sha256}\n"
             f"- Merkle Audit Root Hash: {merkle_root}\n"
-            f"- Certified under Section 63 Bharatiya Sakshya Adhiniyam, 2023.\n\n"
+            f"- Tamper-evident electronic certificate chain under Section 63 Bharatiya Sakshya Adhiniyam, 2023.\n\n"
             f"PRAYER:\n"
             f"It is respectfully requested that this complaint be registered as a First Information Report (FIR) under "
             f"the aforementioned statutory sections, that call detail records (CDR) and IP gateway logs for {caller_ani} "
@@ -136,6 +138,12 @@ class FIRDocketService:
         return {
             "status": "DOCKET_GENERATED",
             "docket_id": docket_id,
+            "document_classification": "ASSISTED_LEGAL_DRAFT",
+            "disclaimer": (
+                "This docket is an automated draft assistant provided for administrative convenience. "
+                "It does not constitute formal legal counsel and requires independent human review "
+                "by authorized institutional counsel before submission to police or courts."
+            ),
             "created_at": now.isoformat(),
             "threat_classification": threat_level,
             "averted_amount_inr": attempted_amount_inr,
@@ -157,7 +165,7 @@ class FIRDocketService:
                 "risk_score": risk_score,
                 "vocoder_attributed": vocoder_family,
                 "dpdp_act_compliance": "SEC_8_7_CERTIFIED_ZERO_RAW_BIOMETRICS_PERSISTED",
-                "bsa_section_63_certified": True,
+                "bsa_section_63_tamper_evident": True,
             },
             "police_fir_complaint_text": police_narrative,
             "rbi_cfr_schedule": rbi_cfr_schedule,
