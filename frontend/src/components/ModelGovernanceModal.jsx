@@ -52,6 +52,8 @@ import {
   fetchShadowTelemetry,
   promoteShadowModel,
   resetShadowCircuitBreaker,
+  fetchSasvBenchmark,
+  evaluateJointSasv,
 } from '../services/aegisApiClient';
 
 export function ModelGovernanceModal({
@@ -92,6 +94,10 @@ export function ModelGovernanceModal({
   const [promotingShadow, setPromotingShadow] = useState(false);
   const [promotionMessage, setPromotionMessage] = useState(null);
 
+  // Joint SASV (CM + ASV) state
+  const [sasvBenchmark, setSasvBenchmark] = useState(null);
+  const [sasvLiveVerdict, setSasvLiveVerdict] = useState(null);
+
   // Dispute Form state
   const [disputeForm, setDisputeForm] = useState({
     call_sid: analysisResult?.analysis_id || 'CALL-' + Date.now().toString(36).toUpperCase(),
@@ -126,6 +132,7 @@ export function ModelGovernanceModal({
         secRes,
         dueRes,
         shadowRes,
+        sasvRes,
       ] = await Promise.all([
         fetchModelCards({ apiBaseUrl }),
         fetchRbiFreeAiMatrix({ apiBaseUrl }),
@@ -140,6 +147,7 @@ export function ModelGovernanceModal({
         fetchSecurityPack({ apiBaseUrl }),
         fetchRbiDueDiligence({ apiBaseUrl }),
         fetchShadowTelemetry({ apiBaseUrl }),
+        fetchSasvBenchmark({ apiBaseUrl }),
       ]);
       setModelCards(cardsRes.model_cards || {});
       setFreeAiMatrix(matrixRes);
@@ -154,6 +162,21 @@ export function ModelGovernanceModal({
       setSecurityPack(secRes);
       setRbiDueDiligence(dueRes);
       setShadowTelemetry(shadowRes);
+      setSasvBenchmark(sasvRes);
+
+      // Pre-compute live SASV verdict
+      try {
+        const sasvPayload = {
+          cm_synthetic_prob: analysisResult?.primary_fake_score || analysisResult?.raw_fake_score || 0.12,
+          asv_similarity: analysisResult?.speaker_similarity || 0.88,
+          transfer_amount_inr: 750000.0,
+          customer_account_id: 'HDFC-CORP-4820',
+        };
+        const sasvVerdict = await evaluateJointSasv(sasvPayload, { apiBaseUrl });
+        setSasvLiveVerdict(sasvVerdict);
+      } catch (e) {
+        console.warn('SASV verdict pre-computation notice:', e);
+      }
 
       // Pre-generate Section 63 certificate
       try {
@@ -322,6 +345,7 @@ export function ModelGovernanceModal({
             { id: 'customer_dispute', label: 'Customer Contestation', icon: UserCheck },
             { id: 'multi_tenant', label: 'Multi-Tenant & pgvector', icon: Server },
             { id: 'replay_multilingual', label: 'Replay & Indian Dialects', icon: Radio },
+            { id: 'sasv_joint', label: 'Joint SASV (CM + ASV)', icon: ShieldCheck },
             { id: 'vendor_assurance', label: 'Vendor Assurance & Shadow Ops', icon: Award },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -1264,6 +1288,188 @@ export function ModelGovernanceModal({
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: JOINT SASV (CM + ASV) */}
+              {activeTab === 'sasv_joint' && (
+                <div className="space-y-6">
+                  {/* Executive Header Banner */}
+                  <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-cyan-950/40 via-slate-900 to-slate-900 border border-cyan-500/30 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                          <h3 className="text-sm font-bold font-mono uppercase tracking-wider text-white">
+                            Joint Spoofing-Aware Speaker Verification (SASV)
+                          </h3>
+                        </div>
+                        <p className="text-xs text-slate-300">
+                          Jointly evaluating Countermeasure (CM: Forensics-0.3B & AASIST-L) with Speaker Verification (ASV: ECAPA-TDNN 192-dim Voiceprint Vault) to thwart both targeted voice clones and human impostors.
+                        </p>
+                      </div>
+                      <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold whitespace-nowrap">
+                        Joint SASV Active
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-white/10 text-xs">
+                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                        <span className="text-[10px] font-mono text-slate-400 block uppercase">Joint SASV EER</span>
+                        <span className="text-sm font-mono font-bold text-emerald-400">
+                          {sasvBenchmark?.metrics?.joint_sasv_eer_percent ?? 0.00}%
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                        <span className="text-[10px] font-mono text-slate-400 block uppercase">Banking actDCF</span>
+                        <span className="text-sm font-mono font-bold text-cyan-300">
+                          {sasvBenchmark?.metrics?.sasv_act_dcf?.toFixed(4) || '0.0000'}
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                        <span className="text-[10px] font-mono text-slate-400 block uppercase">Zero-Effort ASV EER</span>
+                        <span className="text-sm font-mono font-bold text-amber-300">
+                          {sasvBenchmark?.metrics?.zero_effort_asv_eer_percent ?? 0.00}%
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+                        <span className="text-[10px] font-mono text-slate-400 block uppercase">Spoof CM EER</span>
+                        <span className="text-sm font-mono font-bold text-purple-300">
+                          {sasvBenchmark?.metrics?.spoof_countermeasure_eer_percent ?? 0.00}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Three-Way Banking Threat Defense Architecture */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-bold text-emerald-300 uppercase">
+                          1. Target Bona Fide
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          MUST ALLOW
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Enrolled customer speaking naturally with their authentic biological voice. CM confirms organic phonation AND ASV confirms customer identity match.
+                      </p>
+                      <div className="text-[11px] font-mono text-emerald-400 pt-1">
+                        Action: Authorize Transaction
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-bold text-amber-300 uppercase">
+                          2. Zero-Effort Impostor
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          REJECT BIOMETRIC
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Human fraudster speaking with natural voice but wrong identity. CM passes (voice is real), but ASV correctly rejects (voiceprint does not match customer).
+                      </p>
+                      <div className="text-[11px] font-mono text-amber-400 pt-1">
+                        Action: Step-Up Authentication
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-rose-950/20 border border-rose-500/30 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-bold text-rose-300 uppercase">
+                          3. Spoofed Target
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                          BLOCK & ESCALATE
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Generative AI voice clone synthesized to mimic enrolled customer. ASV matches customer profile, but CM catches neural vocoder phase artifacts.
+                      </p>
+                      <div className="text-[11px] font-mono text-rose-400 pt-1">
+                        Action: Emergency Account Lock
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Active Call SASV Joint Verdict */}
+                  {sasvLiveVerdict && (
+                    <div className="p-4 sm:p-5 rounded-xl bg-black/50 border border-cyan-500/30 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <UserCheck className="w-4 h-4 text-cyan-400" />
+                          <h4 className="text-xs font-mono uppercase tracking-wider text-slate-200 font-bold">
+                            Active Call Joint SASV Decision
+                          </h4>
+                          <span className="text-[10px] font-mono text-slate-400">
+                            Account: {sasvLiveVerdict.customer_account_id || 'HDFC-CORP-4820'}
+                          </span>
+                        </div>
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-mono font-bold border ${
+                          sasvLiveVerdict.decision === 'PASSED'
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                            : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                        }`}>
+                          {sasvLiveVerdict.decision}: {sasvLiveVerdict.threat_classification}
+                        </span>
+                      </div>
+
+                      <div className="p-3 rounded-lg bg-slate-900 border border-white/5 space-y-1.5 text-xs">
+                        <p className="text-slate-300">
+                          <strong className="text-white">Forensic Narrative:</strong> {sasvLiveVerdict.analyst_narrative}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-slate-400 pt-1">
+                          <span>Joint SASV Score: <strong className="text-cyan-300">{sasvLiveVerdict.joint_sasv_score}</strong></span>
+                          <span>CM Synthetic Prob: <strong className="text-purple-300">{sasvLiveVerdict.cm_synthetic_probability}</strong></span>
+                          <span>ASV Similarity: <strong className="text-amber-300">{sasvLiveVerdict.asv_cosine_similarity}</strong></span>
+                          <span>Operating Threshold: <strong className="text-slate-200">{sasvLiveVerdict.operating_threshold}</strong></span>
+                          <span>Policy Profile: <strong className="text-emerald-400">{sasvLiveVerdict.risk_profile}</strong></span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Frozen Evaluation Telemetry Matrix */}
+                  <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-1.5">
+                        <Scale className="w-3.5 h-3.5 text-amber-400" /> SASV Frozen Benchmark Parameters & Error Matrix
+                      </h4>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        Total Trials: {sasvBenchmark?.sample_counts?.total_evaluations ?? 1500}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+                      <div className="p-2.5 rounded-lg bg-slate-900 border border-white/5">
+                        <span className="text-[10px] text-slate-400 block uppercase">Target Prior P(tar)</span>
+                        <span className="text-xs font-bold text-white">
+                          {sasvBenchmark?.operating_parameters?.target_prior ?? 0.95}
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-900 border border-white/5">
+                        <span className="text-[10px] text-slate-400 block uppercase">Cost False Reject</span>
+                        <span className="text-xs font-bold text-white">
+                          {sasvBenchmark?.operating_parameters?.cost_false_reject ?? 1.0}
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-900 border border-white/5">
+                        <span className="text-[10px] text-slate-400 block uppercase">Cost False Accept</span>
+                        <span className="text-xs font-bold text-rose-400">
+                          {sasvBenchmark?.operating_parameters?.cost_false_accept ?? 10.0} (10x Penalty)
+                        </span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-900 border border-white/5">
+                        <span className="text-[10px] text-slate-400 block uppercase">Banking actDCF</span>
+                        <span className="text-xs font-bold text-cyan-300">
+                          {sasvBenchmark?.metrics?.sasv_act_dcf?.toFixed(4) || '0.0000'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

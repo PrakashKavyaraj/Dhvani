@@ -1585,6 +1585,38 @@ export async function resetShadowCircuitBreaker(options = {}) {
   return await res.json();
 }
 
+/**
+ * Joint SASV: Fetch frozen benchmark metrics across target, zero-effort, and spoof trials.
+ */
+export async function fetchSasvBenchmark(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/sasv/benchmark`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch SASV benchmark: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Joint SASV: Evaluate live combined decision (CM + ASV).
+ */
+export async function evaluateJointSasv(payload, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/sasv/joint-verdict`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || `Joint SASV evaluation failed: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+
 
 
 
