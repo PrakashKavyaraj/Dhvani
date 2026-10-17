@@ -115,7 +115,7 @@ class AlertDispatcher:
             latency = round((time.perf_counter() - t_start) * 1000, 1)
             logger.info("Webhook %s offline or unreachable (%s); recorded as SIMULATED_DISPATCH", webhook_url, err)
             return "SIMULATED_DISPATCH", {
-                "note": "Offline environment — local simulation queue active",
+                "note": "Offline environment: local simulation queue active",
                 "endpoint": webhook_url,
                 "latency_ms": latency,
             }

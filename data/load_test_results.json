@@ -1,0 +1,70 @@
+{
+  "timestamp": "2026-10-17T21:53:34Z",
+  "sla_budget_ms": 350.0,
+  "concurrency_benchmarks": {
+    "5_calls": {
+      "concurrent_calls": 5,
+      "total_turns": 125,
+      "wall_clock_seconds": 0.01,
+      "throughput_turns_per_sec": 24464.6,
+      "latency_p50_ms": 0.03,
+      "latency_p90_ms": 0.04,
+      "latency_p95_ms": 0.04,
+      "latency_p99_ms": 0.34,
+      "latency_max_ms": 1.05,
+      "latency_mean_ms": 0.04,
+      "latency_stdev_ms": 0.1,
+      "sla_budget_ms": 350.0,
+      "sla_compliance_pct": 100.0,
+      "circuit_breakers_tripped": 0
+    },
+    "10_calls": {
+      "concurrent_calls": 10,
+      "total_turns": 250,
+      "wall_clock_seconds": 0.01,
+      "throughput_turns_per_sec": 27381.9,
+      "latency_p50_ms": 0.03,
+      "latency_p90_ms": 0.03,
+      "latency_p95_ms": 0.04,
+      "latency_p99_ms": 0.09,
+      "latency_max_ms": 0.88,
+      "latency_mean_ms": 0.04,
+      "latency_stdev_ms": 0.07,
+      "sla_budget_ms": 350.0,
+      "sla_compliance_pct": 100.0,
+      "circuit_breakers_tripped": 0
+    },
+    "25_calls": {
+      "concurrent_calls": 25,
+      "total_turns": 625,
+      "wall_clock_seconds": 0.02,
+      "throughput_turns_per_sec": 28816.7,
+      "latency_p50_ms": 0.03,
+      "latency_p90_ms": 0.03,
+      "latency_p95_ms": 0.04,
+      "latency_p99_ms": 0.84,
+      "latency_max_ms": 2.63,
+      "latency_mean_ms": 0.05,
+      "latency_stdev_ms": 0.19,
+      "sla_budget_ms": 350.0,
+      "sla_compliance_pct": 100.0,
+      "circuit_breakers_tripped": 0
+    },
+    "50_calls": {
+      "concurrent_calls": 50,
+      "total_turns": 1250,
+      "wall_clock_seconds": 0.04,
+      "throughput_turns_per_sec": 30222.4,
+      "latency_p50_ms": 0.03,
+      "latency_p90_ms": 0.03,
+      "latency_p95_ms": 0.04,
+      "latency_p99_ms": 0.06,
+      "latency_max_ms": 2.49,
+      "latency_mean_ms": 0.03,
+      "latency_stdev_ms": 0.11,
+      "sla_budget_ms": 350.0,
+      "sla_compliance_pct": 100.0,
+      "circuit_breakers_tripped": 0
+    }
+  }
+}

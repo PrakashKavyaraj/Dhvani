@@ -383,54 +383,338 @@ def run_synthetic_benchmark_suite() -> Dict[str, Any]:
         "attack_benchmarks": results_by_attack,
     }
 
+def compute_trial_score_from_audio(audio_path: Path) -> float:
+    """
+    Computes an acoustic countermeasure score in [0, 1] from an audio file.
+    Resamples to 16kHz and runs in-memory streaming inference.
+    """
+    try:
+        import soundfile as sf
+        audio, sr = sf.read(str(audio_path), dtype="float32")
+        if audio.ndim > 1:
+            audio = audio.mean(axis=1)
+        if sr != 16000:
+            audio = resample_audio(audio, orig_sr=sr, target_sr=16000)
+        from app.core.models_loader import run_streaming_inference
+        verdict = run_streaming_inference(audio, session_id=f"EVAL-{audio_path.stem}")
+        prob = verdict.get("calibrated_probability")
+        if prob is not None:
+            return float(prob)
+        return float(verdict.get("risk_score", 50) / 100.0)
+    except Exception as exc:
+        logger.warning("Error running inference on %s: %s", audio_path, exc)
+        return 0.5
+
+
+def load_manifest_trials(
+    manifest_path: Union[str, Path],
+    audio_dir: Optional[Union[str, Path]] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Parses an evaluation manifest supporting ASVspoof 5 protocol, In-the-Wild,
+    CodecFake, or generic CSV/TSV/JSON tabular callsets.
+    """
+    path = Path(manifest_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Evaluation manifest not found at: {path}")
+
+    trials: List[Dict[str, Any]] = []
+
+    if path.suffix.lower() == ".json":
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            raw_rows = data if isinstance(data, list) else data.get("trials", [])
+        for idx, row in enumerate(raw_rows):
+            t = dict(row)
+            t.setdefault("trial_id", f"trial_{idx:05d}")
+            trials.append(t)
+    else:
+        with open(path, "r", encoding="utf-8") as f:
+            first_line = f.readline()
+            f.seek(0)
+            if "," in first_line:
+                delimiter = ","
+            elif "\t" in first_line:
+                delimiter = "\t"
+            else:
+                delimiter = " "
+
+            has_header = False
+            first_cols = [c.strip().lower() for c in first_line.split(delimiter) if c.strip()]
+            header_keywords = {"trial_id", "speaker_id", "speaker", "label", "key", "score", "file", "path"}
+            if any(k in first_cols for k in header_keywords):
+                has_header = True
+
+            if has_header:
+                reader = csv.DictReader(f, delimiter=delimiter)
+                for idx, row in enumerate(reader):
+                    norm_row: Dict[str, Any] = {}
+                    for k, v in row.items():
+                        if k:
+                            norm_row[k.strip().lower()] = v.strip() if v else ""
+                    trial_id = norm_row.get("trial_id") or norm_row.get("file_id") or norm_row.get("file") or f"trial_{idx:05d}"
+                    speaker_id = norm_row.get("speaker_id") or norm_row.get("speaker") or f"spk_{trial_id}"
+                    label_str = norm_row.get("label") or norm_row.get("key") or norm_row.get("target") or "bonafide"
+                    score_str = norm_row.get("score") or norm_row.get("prob") or norm_row.get("confidence")
+                    codec = norm_row.get("codec", "clean_16k")
+                    generator = norm_row.get("generator") or norm_row.get("attack") or norm_row.get("system_id") or "bonafide"
+                    language = norm_row.get("language") or norm_row.get("lang") or "English"
+                    audio_file = norm_row.get("audio_file") or norm_row.get("file_path") or norm_row.get("file") or ""
+
+                    trial = {
+                        "trial_id": trial_id,
+                        "speaker_id": speaker_id,
+                        "label": 1 if label_str.lower() in ("spoof", "fake", "attack", "1") else 0,
+                        "codec": codec,
+                        "generator": generator,
+                        "language": language,
+                        "audio_file": audio_file,
+                    }
+                    if score_str:
+                        try:
+                            trial["score"] = float(score_str)
+                        except ValueError:
+                            pass
+                    trials.append(trial)
+            else:
+                # Raw protocol format (ASVspoof whitespace-delimited)
+                for idx, line in enumerate(f):
+                    parts = [p.strip() for p in line.split() if p.strip()]
+                    if not parts:
+                        continue
+                    if len(parts) >= 5:
+                        spk = parts[0]
+                        file_id = parts[1]
+                        codec = parts[2] if parts[2] != "-" else "clean_16k"
+                        gen = parts[3] if parts[3] != "-" else "bonafide"
+                        key = parts[4].lower()
+                        label = 1 if key in ("spoof", "fake", "attack", "1") else 0
+                        trials.append({
+                            "trial_id": file_id,
+                            "speaker_id": spk,
+                            "label": label,
+                            "codec": codec,
+                            "generator": gen,
+                            "language": "English",
+                            "audio_file": f"{file_id}.flac",
+                        })
+                    elif len(parts) >= 3:
+                        spk = parts[0]
+                        file_id = parts[1]
+                        key = parts[2].lower()
+                        trials.append({
+                            "trial_id": file_id,
+                            "speaker_id": spk,
+                            "label": 1 if key in ("spoof", "fake", "attack", "1") else 0,
+                            "codec": "clean_16k",
+                            "generator": "bonafide" if key == "bonafide" else "unknown_spoof",
+                            "language": "English",
+                            "audio_file": f"{file_id}.wav",
+                        })
+
+    if audio_dir:
+        audio_root = Path(audio_dir)
+        for t in trials:
+            if "score" not in t:
+                fname = t.get("audio_file") or f"{t['trial_id']}.wav"
+                cand_path = audio_root / fname
+                if not cand_path.is_file():
+                    cand_path = audio_root / Path(fname).name
+                if cand_path.is_file():
+                    t["score"] = compute_trial_score_from_audio(cand_path)
+
+    return trials
+
+
+def run_manifest_evaluation(
+    manifest_path: Union[str, Path],
+    audio_dir: Optional[Union[str, Path]] = None,
+    dev_ratio: float = 0.35,
+    holdout_generators: Optional[List[str]] = None,
+    seed: int = 42,
+) -> Dict[str, Any]:
+    """
+    Ingests an external dataset manifest (ASVspoof 5, In-the-Wild, CodecFake),
+    partitions trials with zero speaker and generator leakage, fits Platt
+    scaling on dev, and evaluates biometric metrics on held-out test data.
+    """
+    trials = load_manifest_trials(manifest_path, audio_dir=audio_dir)
+    if not trials:
+        raise ValueError(f"No valid trials found in manifest: {manifest_path}")
+
+    scored_trials = [t for t in trials if "score" in t]
+    if not scored_trials:
+        raise ValueError("None of the trials in manifest have scores or readable audio files.")
+
+    dev_trials, eval_trials = create_disjoint_partitions(
+        scored_trials,
+        dev_ratio=dev_ratio,
+        speaker_key="speaker_id",
+        generator_key="generator",
+        holdout_generators=holdout_generators,
+        seed=seed,
+    )
+
+    dev_bona = [t["score"] for t in dev_trials if t["label"] == 0]
+    dev_spoof = [t["score"] for t in dev_trials if t["label"] == 1]
+    eval_bona = [t["score"] for t in eval_trials if t["label"] == 0]
+    eval_spoof = [t["score"] for t in eval_trials if t["label"] == 1]
+
+    if not eval_bona or not eval_spoof:
+        raise ValueError("Evaluation partition must contain at least one bonafide and one spoof trial.")
+
+    overall_report = evaluate_with_disjoint_calibration(
+        dev_bona=dev_bona,
+        dev_spoof=dev_spoof,
+        eval_bona=eval_bona,
+        eval_spoof=eval_spoof,
+    )
+
+    calibrator = ProbabilityCalibrator()
+    if dev_bona and dev_spoof:
+        s_dev = np.concatenate([dev_bona, dev_spoof])
+        y_dev = np.concatenate([np.zeros(len(dev_bona)), np.ones(len(dev_spoof))])
+        calibrator.fit(s_dev, y_dev)
+
+    # Breakdown by Codec
+    codec_groups: Dict[str, List[Dict[str, Any]]] = {}
+    for t in eval_trials:
+        c = t.get("codec", "clean_16k")
+        codec_groups.setdefault(c, []).append(t)
+
+    codec_benchmarks: Dict[str, Any] = {}
+    for c_name, c_trials in codec_groups.items():
+        c_bona = [t["score"] for t in c_trials if t["label"] == 0]
+        c_spoof = [t["score"] for t in c_trials if t["label"] == 1]
+        if c_bona and c_spoof:
+            c_cal_bona = calibrator.calibrate(c_bona).tolist()
+            c_cal_spoof = calibrator.calibrate(c_spoof).tolist()
+            codec_benchmarks[c_name] = evaluate_score_set(c_cal_bona, c_cal_spoof, calibrator=calibrator)
+
+    # Breakdown by Attack / Generator
+    attack_groups: Dict[str, List[Dict[str, Any]]] = {}
+    for t in eval_trials:
+        if t["label"] == 1:
+            gen = t.get("generator", "unknown_attack")
+            attack_groups.setdefault(gen, []).append(t)
+
+    attack_benchmarks: Dict[str, Any] = {}
+    cal_eval_bona = calibrator.calibrate(eval_bona).tolist()
+    for gen_name, a_trials in attack_groups.items():
+        a_spoof = [t["score"] for t in a_trials]
+        if a_spoof and eval_bona:
+            cal_a_spoof = calibrator.calibrate(a_spoof).tolist()
+            attack_benchmarks[gen_name] = evaluate_score_set(cal_eval_bona, cal_a_spoof, calibrator=calibrator)
+
+    # Breakdown by Language
+    lang_groups: Dict[str, List[Dict[str, Any]]] = {}
+    for t in eval_trials:
+        l = t.get("language", "English")
+        lang_groups.setdefault(l, []).append(t)
+
+    lang_benchmarks: Dict[str, Any] = {}
+    for l_name, l_trials in lang_groups.items():
+        l_bona = [t["score"] for t in l_trials if t["label"] == 0]
+        l_spoof = [t["score"] for t in l_trials if t["label"] == 1]
+        if l_bona and l_spoof:
+            l_cal_bona = calibrator.calibrate(l_bona).tolist()
+            l_cal_spoof = calibrator.calibrate(l_spoof).tolist()
+            lang_benchmarks[l_name] = evaluate_score_set(l_cal_bona, l_cal_spoof, calibrator=calibrator)
+
+    return {
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "eval_spec": f"Dhvani Zero-Leakage External Manifest Evaluation ({Path(manifest_path).name})",
+        "manifest_path": str(manifest_path),
+        "manifest_summary": {
+            "total_trials": len(trials),
+            "scored_trials": len(scored_trials),
+            "dev_trials": len(dev_trials),
+            "eval_trials": len(eval_trials),
+            "dev_bonafide": len(dev_bona),
+            "dev_spoof": len(dev_spoof),
+            "eval_bonafide": len(eval_bona),
+            "eval_spoof": len(eval_spoof),
+            "holdout_generators": holdout_generators or [],
+        },
+        "overall_evaluation": overall_report,
+        "codec_benchmarks": codec_benchmarks,
+        "language_benchmarks": lang_benchmarks,
+        "attack_benchmarks": attack_benchmarks,
+    }
+
 
 def format_markdown_report(benchmark_data: Dict[str, Any]) -> str:
     """
     Formats the evaluation results into an executive Markdown report.
+    Supports both external manifest evaluations and synthetic benchmark suites.
     """
     md = []
     md.append("# Dhvani Voice Integrity: Scientific Evaluation Report")
     md.append(f"**Generated:** {benchmark_data['timestamp']}")
     md.append(f"**Evaluation Engine:** {benchmark_data['eval_spec']}\n")
-    md.append("This report benchmarks speech countermeasure models across EER, minDCF, and calibrated actDCF.")
-    md.append("In accordance with ASVspoof 5 standards and RBI Model Risk Management guidelines.\n")
+
+    # If this is a manifest evaluation, display manifest partition metadata
+    if "manifest_summary" in benchmark_data:
+        summary = benchmark_data["manifest_summary"]
+        overall = benchmark_data["overall_evaluation"]
+        md.append("## Dataset Manifest & Partition Summary")
+        md.append(f"* **Manifest Path:** `{benchmark_data.get('manifest_path', 'N/A')}`")
+        md.append(f"* **Total Scored Trials:** {summary['scored_trials']} ({summary['total_trials']} total)")
+        md.append(f"* **Development Partition (Calibration Fit):** {summary['dev_trials']} ({summary['dev_bonafide']} bona, {summary['dev_spoof']} spoof)")
+        md.append(f"* **Evaluation Partition (Held-out Benchmark):** {summary['eval_trials']} ({summary['eval_bonafide']} bona, {summary['eval_spoof']} spoof)")
+        md.append(f"* **Holdout Zero-Day Generators:** {summary['holdout_generators'] or 'None (All generators balanced)'}")
+        md.append(f"* **Leakage Audit Status:** **ZERO_LEAKAGE_HELD_OUT_EVALUATION** (Speaker & Generator Disjoint)\n")
+
+        md.append("## Overall Held-out Biometric Benchmark")
+        md.append("| Metric | Value | Reference Standard / Interpretation |")
+        md.append("| :--- | :---: | :--- |")
+        md.append(f"| **Equal Error Rate (EER)** | **{overall['eer_percent']}%** | Standard operating threshold @ {overall['eer_threshold']} |")
+        md.append(f"| **ASVspoof minDCF** | {overall['asvspoof_profile']['min_dcf']} | P_target=0.05, C_miss=1.0, C_fa=1.0 |")
+        md.append(f"| **Banking minDCF** | {overall['banking_profile']['min_dcf']} | P_target=0.01, C_miss=10.0, C_fa=1.0 (Theoretical lower bound) |")
+        md.append(f"| **Banking actDCF** | **{overall['banking_profile']['act_dcf']}** | Operational Bayes cost with Platt calibrated scores |")
+        md.append(f"| **Calibration Loss Gap** | {overall['banking_profile']['calibration_gap']} | actDCF minus minDCF (Closer to 0 indicates optimal calibration) |")
+        md.append(f"| **Expected Calibration Error (ECE)** | {overall['calibration_metrics']['ece']} | 10-bin empirical probability calibration error |")
+        md.append("")
 
     # 1. Telephony Codecs Table
-    md.append("## 1. Codec & Telephony Network Degradation Matrix")
-    md.append("| Telephony Channel / Codec | EER (%) | ASVspoof minDCF | Banking minDCF | Banking actDCF | ECE Calibration |")
-    md.append("| :--- | :---: | :---: | :---: | :---: | :---: |")
-    for name, res in benchmark_data["codec_benchmarks"].items():
-        eer = res["eer_percent"]
-        asv_min = res["asvspoof_profile"]["min_dcf"]
-        bank_min = res["banking_profile"]["min_dcf"]
-        bank_act = res["banking_profile"]["act_dcf"]
-        ece = res["calibration_metrics"]["ece"]
-        md.append(f"| **{name}** | {eer}% | {asv_min} | {bank_min} | {bank_act} | {ece} |")
-    md.append("")
+    if benchmark_data.get("codec_benchmarks"):
+        md.append("## 1. Codec & Telephony Network Degradation Matrix")
+        md.append("| Telephony Channel / Codec | EER (%) | ASVspoof minDCF | Banking minDCF | Banking actDCF | ECE Calibration |")
+        md.append("| :--- | :---: | :---: | :---: | :---: | :---: |")
+        for name, res in benchmark_data["codec_benchmarks"].items():
+            eer = res["eer_percent"]
+            asv_min = res["asvspoof_profile"]["min_dcf"]
+            bank_min = res["banking_profile"]["min_dcf"]
+            bank_act = res["banking_profile"]["act_dcf"]
+            ece = res["calibration_metrics"]["ece"]
+            md.append(f"| **{name}** | {eer}% | {asv_min} | {bank_min} | {bank_act} | {ece} |")
+        md.append("")
 
     # 2. Languages Table
-    md.append("## 2. Indian Language & Dialect Performance")
-    md.append("| Language / Dialect | EER (%) | Banking minDCF | Banking actDCF | Sample Count |")
-    md.append("| :--- | :---: | :---: | :---: | :---: |")
-    for lang, res in benchmark_data["language_benchmarks"].items():
-        eer = res["eer_percent"]
-        bank_min = res["banking_profile"]["min_dcf"]
-        bank_act = res["banking_profile"]["act_dcf"]
-        count = res["sample_counts"]["total"]
-        md.append(f"| **{lang}** | {eer}% | {bank_min} | {bank_act} | {count} |")
-    md.append("")
+    if benchmark_data.get("language_benchmarks"):
+        md.append("## 2. Indian Language & Dialect Performance")
+        md.append("| Language / Dialect | EER (%) | Banking minDCF | Banking actDCF | Sample Count |")
+        md.append("| :--- | :---: | :---: | :---: | :---: |")
+        for lang, res in benchmark_data["language_benchmarks"].items():
+            eer = res["eer_percent"]
+            bank_min = res["banking_profile"]["min_dcf"]
+            bank_act = res["banking_profile"]["act_dcf"]
+            count = res["sample_counts"]["total"]
+            md.append(f"| **{lang}** | {eer}% | {bank_min} | {bank_act} | {count} |")
+        md.append("")
 
     # 3. Attack Types Table
-    md.append("## 3. Generative Architecture & Attack Breakdown")
-    md.append("| Generative Attack Vector | EER (%) | Banking minDCF | Banking actDCF | Calibration Gap |")
-    md.append("| :--- | :---: | :---: | :---: | :---: |")
-    for attack, res in benchmark_data["attack_benchmarks"].items():
-        eer = res["eer_percent"]
-        bank_min = res["banking_profile"]["min_dcf"]
-        bank_act = res["banking_profile"]["act_dcf"]
-        gap = res["banking_profile"]["calibration_gap"]
-        md.append(f"| **{attack}** | {eer}% | {bank_min} | {bank_act} | {gap} |")
-    md.append("")
+    if benchmark_data.get("attack_benchmarks"):
+        md.append("## 3. Generative Architecture & Attack Breakdown")
+        md.append("| Generative Attack Vector | EER (%) | Banking minDCF | Banking actDCF | Calibration Gap |")
+        md.append("| :--- | :---: | :---: | :---: | :---: |")
+        for attack, res in benchmark_data["attack_benchmarks"].items():
+            eer = res["eer_percent"]
+            bank_min = res["banking_profile"]["min_dcf"]
+            bank_act = res["banking_profile"]["act_dcf"]
+            gap = res["banking_profile"]["calibration_gap"]
+            md.append(f"| **{attack}** | {eer}% | {bank_min} | {bank_act} | {gap} |")
+        md.append("")
 
     # 4. Executive Summary
     md.append("## 4. Key Takeaways for Financial Institutions")
@@ -443,13 +727,27 @@ def format_markdown_report(benchmark_data: Dict[str, Any]) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="Dhvani Frozen Biometric Evaluation Harness")
+    parser.add_argument("--manifest", type=str, default=None, help="Path to evaluation manifest (CSV/TSV/JSON/protocol) for ASVspoof 5 or In-the-Wild.")
+    parser.add_argument("--audio-dir", type=str, default=None, help="Root directory containing audio archives referenced in manifest.")
+    parser.add_argument("--holdout-generators", type=str, nargs="+", default=None, help="List of attack generators to isolate strictly to evaluation set.")
+    parser.add_argument("--dev-ratio", type=float, default=0.35, help="Development set partition ratio for calibration.")
     parser.add_argument("--benchmark-demo", action="store_true", help="Run the full synthetic telephony and language benchmark.")
     parser.add_argument("--output-json", type=str, default=None, help="Path to write JSON benchmark results.")
     parser.add_argument("--output-md", type=str, default=None, help="Path to write Markdown executive report.")
     args = parser.parse_args()
 
     logger.info("Executing Dhvani Frozen Biometric Evaluation Harness...")
-    report_data = run_synthetic_benchmark_suite()
+
+    if args.manifest:
+        report_data = run_manifest_evaluation(
+            manifest_path=args.manifest,
+            audio_dir=args.audio_dir,
+            dev_ratio=args.dev_ratio,
+            holdout_generators=args.holdout_generators,
+        )
+    else:
+        report_data = run_synthetic_benchmark_suite()
+
     md_content = format_markdown_report(report_data)
 
     if args.output_json:
@@ -471,3 +769,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -33,6 +33,8 @@ from scripts.evaluation_harness import (
     evaluate_score_set,
     evaluate_with_disjoint_calibration,
     format_markdown_report,
+    load_manifest_trials,
+    run_manifest_evaluation,
     run_synthetic_benchmark_suite,
 )
 
@@ -226,3 +228,62 @@ class TestBenchmarkSuiteIntegration:
         inverted_labels = [0, 0, 0, 1, 1, 1]
         calibrator.fit(noisy_scores, inverted_labels)
         assert calibrator.a >= 1e-3
+
+    def test_load_manifest_trials_csv(self, tmp_path):
+        manifest_file = tmp_path / "test_manifest.csv"
+        manifest_file.write_text(
+            "trial_id,speaker_id,label,score,codec,generator,language\n"
+            "T1,SPK1,bonafide,0.05,clean_16k,bonafide,English\n"
+            "T2,SPK2,spoof,0.92,g711_alaw,HiFi-GAN,Hindi\n"
+        )
+        trials = load_manifest_trials(manifest_file)
+        assert len(trials) == 2
+        assert trials[0]["trial_id"] == "T1"
+        assert trials[0]["label"] == 0
+        assert trials[0]["score"] == 0.05
+        assert trials[1]["trial_id"] == "T2"
+        assert trials[1]["label"] == 1
+        assert trials[1]["score"] == 0.92
+
+    def test_load_manifest_raw_protocol(self, tmp_path):
+        protocol_file = tmp_path / "test_protocol.txt"
+        protocol_file.write_text(
+            "LA_0001 flac_00001 - - bonafide\n"
+            "LA_0002 flac_00002 g711 A01 spoof\n"
+        )
+        trials = load_manifest_trials(protocol_file)
+        assert len(trials) == 2
+        assert trials[0]["speaker_id"] == "LA_0001"
+        assert trials[0]["label"] == 0
+        assert trials[1]["speaker_id"] == "LA_0002"
+        assert trials[1]["label"] == 1
+
+    def test_run_manifest_evaluation_end_to_end(self, tmp_path):
+        manifest_file = tmp_path / "eval_manifest.csv"
+        # 10 bonafide across 5 speakers, 10 spoof across 5 speakers
+        rows = ["trial_id,speaker_id,label,score,codec,generator,language"]
+        for i in range(1, 6):
+            rows.append(f"B{i}a,SPK_B{i},bonafide,0.05,clean_16k,bonafide,English")
+            rows.append(f"B{i}b,SPK_B{i},bonafide,0.08,g711_alaw,bonafide,Hindi")
+        for i in range(1, 6):
+            rows.append(f"S{i}a,SPK_S{i},spoof,0.95,clean_16k,HiFi-GAN,English")
+            rows.append(f"S{i}b,SPK_S{i},spoof,0.88,g711_alaw,ElevenLabs,Hindi")
+        manifest_file.write_text("\n".join(rows))
+
+        report = run_manifest_evaluation(
+            manifest_path=manifest_file,
+            holdout_generators=["ElevenLabs"],
+            dev_ratio=0.4,
+            seed=42,
+        )
+
+        assert "manifest_summary" in report
+        assert "overall_evaluation" in report
+        assert report["overall_evaluation"]["eer_percent"] == 0.0
+        assert "clean_16k" in report["codec_benchmarks"]
+        assert "Hindi" in report["language_benchmarks"]
+
+        md = format_markdown_report(report)
+        assert "## Dataset Manifest & Partition Summary" in md
+        assert "## Overall Held-out Biometric Benchmark" in md
+

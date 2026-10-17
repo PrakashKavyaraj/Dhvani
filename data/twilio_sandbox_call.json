@@ -1,0 +1,41 @@
+{
+  "provider": "twilio",
+  "stream_sid": "TWILIO-STRM-1792274149469",
+  "call_sid": "TWILIO-CALL-1792274149469",
+  "caller_ani": "+919876543210",
+  "codec": "audio/x-mulaw",
+  "handshake_latency_ms": 21.28,
+  "start_ack_latency_ms": 0.32,
+  "total_turns_streamed": 35,
+  "turn_latencies": {
+    "p50_ms": 0.2,
+    "p90_ms": 0.26,
+    "p95_ms": 0.28,
+    "p99_ms": 0.56,
+    "max_ms": 0.7,
+    "mean_ms": 0.22
+  },
+  "sla_budget_ms": 350.0,
+  "sla_violations": 0,
+  "sla_compliance_pct": 100.0,
+  "final_verdict": {
+    "event": "verdict",
+    "streamSid": "TWILIO-STRM-1792274149469",
+    "turn": 34,
+    "status": "BUFFERING",
+    "action": "CONTINUE_STREAM",
+    "risk_score": 0,
+    "calibrated_probability": 0.0
+  },
+  "teardown_summary": {
+    "status": "SESSION_CLOSED",
+    "stream_sid": "TWILIO-STRM-1792274149469",
+    "call_sid": "TWILIO-CALL-1792274149469",
+    "duration_seconds": 0.01,
+    "total_turns_analyzed": 0,
+    "latency_p95_ms": 0.0,
+    "fail_open_triggered": false,
+    "dpdp_wiped_samples": 11200,
+    "raw_disk_bytes": 0
+  }
+}

@@ -169,13 +169,15 @@ class CPaaSTelephonyService:
     def process_media_event(
         self,
         stream_sid: str,
-        base64_payload: str,
+        base64_payload: Optional[str] = None,
         sequence_number: int = 0,
+        payload_base64: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Processes an incoming telephony media frame, buffers chunks,
         and triggers calibrated inference when window reaches capacity.
         """
+        payload = base64_payload if base64_payload is not None else (payload_base64 or "")
         session = self._active_sessions.get(stream_sid)
         if not session:
             # Auto-register if start event was skipped in testing
@@ -184,7 +186,7 @@ class CPaaSTelephonyService:
         t_start = time.perf_counter()
 
         # Decode frame
-        chunk_pcm = self.decode_cpaas_media_chunk(base64_payload, encoding=session.encoding)
+        chunk_pcm = self.decode_cpaas_media_chunk(payload, encoding=session.encoding)
         session.audio_chunks.append(chunk_pcm)
         session.total_samples += len(chunk_pcm)
 
