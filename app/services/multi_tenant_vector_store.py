@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS tenant_voiceprints (
 );
 
 -- HNSW Vector Index for Sub-Millisecond Cosine Similarity Search
+-- Note: Similarity search is executed exclusively over the 192-dim normalized floating point embeddings.
+-- voice_token_sha256 is an immutable non-reversible HMAC surrogate for audit log correlation and is NEVER used for vector distance.
 CREATE INDEX IF NOT EXISTS idx_tenant_voiceprints_hnsw
 ON tenant_voiceprints USING hnsw (embedding vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
@@ -69,6 +71,18 @@ WITH (m = 16, ef_construction = 64);
 -- Tenant Isolation B-Tree Index
 CREATE INDEX IF NOT EXISTS idx_tenant_lookup
 ON tenant_voiceprints (tenant_id, is_active);
+
+-- Row-Level Security (RLS) for Defense-in-Depth Tenant Partitioning
+ALTER TABLE tenant_voiceprints ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation_policy ON tenant_voiceprints
+FOR ALL
+USING (tenant_id = current_setting('app.current_tenant', true));
+
+-- Note on Encryption-at-Rest:
+-- Voice embeddings constitute biometric personal data under DPDP Act 2023.
+-- Production instances must enforce AWS KMS / GCP Cloud KMS AES-256 storage volume encryption
+-- and PostgreSQL Transparent Data Encryption (TDE) or pgcrypto column protection.
 
 -- Multi-Tenant Telephony Dispute Records
 CREATE TABLE IF NOT EXISTS tenant_disputes (
@@ -420,6 +434,10 @@ class MultiTenantVectorStore:
             "customer_account_id": c_clean,
             "records_purged": deleted_count,
             "dpdp_compliance": "Section 12 Right to Erasure Honored",
+            "data_separation_architecture": {
+                "biometrics_purged": "Customer account ID, speaker metadata, and 192-dim biometric embeddings permanently deleted from vault and HNSW index.",
+                "audit_retention_retained": "Non-identifying cryptographic Merkle hashes (leaf_hash, merkle_root, timestamp) retained in append-only ledger for statutory fraud investigations (RBI Master Directions & IT Act 2000). Zero customer PII or raw voice data retained.",
+            },
         }
 
     def get_tenant_stats(self, tenant_id: str) -> Dict[str, Any]:

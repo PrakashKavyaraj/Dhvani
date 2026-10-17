@@ -23,7 +23,7 @@ def test_security_certifications_pack():
 
 def test_rbi_third_party_due_diligence():
     res = due_diligence_service.get_rbi_third_party_due_diligence()
-    assert res["due_diligence_status"] == "APPROVED_FOR_SCHEDULED_COMMERCIAL_BANKS"
+    assert res["due_diligence_status"] == "SUPPORTING_BANK_FREE_AI_AND_OUTSOURCING_COMPLIANCE"
     assert len(res["covenants"]) == 5
     assert res["sla_commitments"]["voice_decision_latency_budget_ms"] == 350
     assert res["sla_commitments"]["telephony_availability_sla_percent"] == 99.999

@@ -92,6 +92,14 @@ class TestRedisSessionStore:
         health = test_session_store.get_health()
         assert "status" in health
         assert health["status"] in ["HEALTHY", "OPERATIONAL", "DEGRADED"]
+        assert "zero_disk_audit" in health
+        assert health["zero_disk_audit"]["zero_disk_persistence_verified"] is True
+
+    def test_zero_disk_persistence_audit(self, test_session_store):
+        audit = test_session_store.verify_zero_disk_persistence()
+        assert "zero_disk_persistence_verified" in audit
+        assert audit["zero_disk_persistence_verified"] is True
+        assert "DPDP Act 2023 Section 8(7)" in audit["compliance_alignment"]
 
 
 class TestMultiTenantVectorStore:

@@ -33,56 +33,62 @@ class TenantPolicy:
     step_up_threshold: int = 35
     sla_budget_ms: float = 350.0
     fail_open_enabled: bool = True
+    fail_open_action: str = "STEP_UP"  # "STEP_UP" or "ALLOW_CALL_FLAGGED"
     api_key_hash: Optional[str] = None
     rate_limit_rpm: int = 1200
     created_at: float = field(default_factory=time.time)
     request_count: int = 0
     intercept_count: int = 0
     circuit_trip_count: int = 0
+    disclaimer: str = "Simulated demonstration profile for architectural validation. No institutional endorsement or relationship implied."
 
 
 DEFAULT_TENANT_POLICIES: Dict[str, TenantPolicy] = {
     "HDFC-BANK": TenantPolicy(
         tenant_id="HDFC-BANK",
-        institution_name="HDFC Bank Retail Contact Center",
+        institution_name="Simulation Tenant: HDFC Retail Architecture Profile (Demo)",
         tier="RETAIL_BANKING",
         block_threshold=70,
         step_up_threshold=35,
         sla_budget_ms=350.0,
         fail_open_enabled=True,
+        fail_open_action="ALLOW_CALL_FLAGGED",
         api_key_hash=hashlib.sha256(b"dhvani_live_hdfc_key_2026").hexdigest(),
         rate_limit_rpm=3000,
     ),
     "SBI-RETAIL": TenantPolicy(
         tenant_id="SBI-RETAIL",
-        institution_name="State Bank of India National IVR",
+        institution_name="Simulation Tenant: SBI IVR Architecture Profile (Demo)",
         tier="RETAIL_BANKING",
         block_threshold=75,
         step_up_threshold=40,
         sla_budget_ms=400.0,
         fail_open_enabled=True,
+        fail_open_action="ALLOW_CALL_FLAGGED",
         api_key_hash=hashlib.sha256(b"dhvani_live_sbi_key_2026").hexdigest(),
         rate_limit_rpm=6000,
     ),
     "ICICI-CORP": TenantPolicy(
         tenant_id="ICICI-CORP",
-        institution_name="ICICI Bank Corporate RTGS Treasury",
+        institution_name="Simulation Tenant: ICICI Corporate Treasury Profile (Demo)",
         tier="CORPORATE_TREASURY",
         block_threshold=50,
         step_up_threshold=25,
         sla_budget_ms=250.0,
         fail_open_enabled=True,
+        fail_open_action="STEP_UP",
         api_key_hash=hashlib.sha256(b"dhvani_live_icici_key_2026").hexdigest(),
         rate_limit_rpm=1000,
     ),
     "AXIS-WEALTH": TenantPolicy(
         tenant_id="AXIS-WEALTH",
-        institution_name="Axis Bank Burgundy Wealth Management",
+        institution_name="Simulation Tenant: Axis Wealth Architecture Profile (Demo)",
         tier="WEALTH_MANAGEMENT",
         block_threshold=45,
         step_up_threshold=20,
         sla_budget_ms=200.0,
         fail_open_enabled=True,
+        fail_open_action="STEP_UP",
         api_key_hash=hashlib.sha256(b"dhvani_live_axis_key_2026").hexdigest(),
         rate_limit_rpm=600,
     ),
@@ -138,10 +144,12 @@ class TenantPolicyService:
                     "step_up_threshold": p.step_up_threshold,
                     "sla_budget_ms": p.sla_budget_ms,
                     "fail_open_enabled": p.fail_open_enabled,
+                    "fail_open_action": p.fail_open_action,
                     "rate_limit_rpm": p.rate_limit_rpm,
                     "request_count": p.request_count,
                     "intercept_count": p.intercept_count,
                     "circuit_trip_count": p.circuit_trip_count,
+                    "disclaimer": p.disclaimer,
                 }
                 for p in self._policies.values()
             ]
@@ -153,6 +161,7 @@ class TenantPolicyService:
         step_up_threshold: Optional[int] = None,
         sla_budget_ms: Optional[float] = None,
         fail_open_enabled: Optional[bool] = None,
+        fail_open_action: Optional[str] = None,
         institution_name: Optional[str] = None,
         tier: Optional[str] = None,
     ) -> TenantPolicy:
@@ -174,6 +183,8 @@ class TenantPolicyService:
                 p.sla_budget_ms = max(50.0, min(1000.0, sla_budget_ms))
             if fail_open_enabled is not None:
                 p.fail_open_enabled = fail_open_enabled
+            if fail_open_action is not None:
+                p.fail_open_action = fail_open_action.strip().upper()
             if institution_name:
                 p.institution_name = institution_name
             if tier:

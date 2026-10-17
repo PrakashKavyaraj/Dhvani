@@ -55,6 +55,7 @@ class CPaaSSession:
         self.latest_verdict: Optional[Dict[str, Any]] = None
         self.latencies_ms: List[float] = []
         self.fail_open_tripped = False
+        self.fallback_action = "ALLOW_CALL_FLAGGED"
 
 
 class CPaaSTelephonyService:
@@ -74,6 +75,7 @@ class CPaaSTelephonyService:
         caller_ani: str = "+91-Carrier-Stream",
         encoding: str = "audio/x-mulaw",
         sample_rate: int = 8000,
+        fallback_action: str = "ALLOW_CALL_FLAGGED",
     ) -> CPaaSSession:
         """Registers a new inbound CPaaS stream."""
         session = CPaaSSession(
@@ -83,8 +85,15 @@ class CPaaSTelephonyService:
             encoding=encoding,
             sample_rate=sample_rate,
         )
+        session.fallback_action = fallback_action
         self._active_sessions[stream_sid] = session
-        logger.info("CPaaS Stream started | StreamSID=%s | CallSID=%s | Encoding=%s", stream_sid, call_sid, encoding)
+        logger.info(
+            "CPaaS Stream started | StreamSID=%s | CallSID=%s | Encoding=%s | FallbackAction=%s",
+            stream_sid,
+            call_sid,
+            encoding,
+            fallback_action,
+        )
         return session
 
     def get_session(self, stream_sid: str) -> Optional[CPaaSSession]:
@@ -204,19 +213,26 @@ class CPaaSTelephonyService:
             recent_p95 = float(np.percentile(session.latencies_ms[-5:], 95))
             if recent_p95 > self.sla_budget_ms:
                 session.fail_open_tripped = True
+                action = session.fallback_action or "ALLOW_CALL_FLAGGED"
+                reason = (
+                    "Inference latency exceeded bank SLA budget (350ms). Fallback to STEP_UP verification to prevent DoS authentication bypass."
+                    if action == "STEP_UP"
+                    else "Inference latency exceeded bank SLA budget. System failed open to protect call continuity per retail policy."
+                )
                 logger.warning(
-                    "CIRCUIT BREAKER TRIPPED (FAIL-OPEN) | StreamSID=%s | LatencyP95=%.1fms > SLA=%.1fms",
+                    "CIRCUIT BREAKER TRIPPED (FAIL-SAFE) | StreamSID=%s | LatencyP95=%.1fms > SLA=%.1fms | Action=%s",
                     stream_sid,
                     recent_p95,
                     self.sla_budget_ms,
+                    action,
                 )
                 return {
                     "status": "CIRCUIT_BREAKER_FAIL_OPEN",
                     "stream_sid": stream_sid,
-                    "action": "ALLOW_CALL_FLAGGED",
+                    "action": action,
                     "circuit_breaker_active": True,
                     "latency_violation_ms": recent_p95,
-                    "reason": "Inference latency exceeded bank SLA budget. System failed open to protect call continuity.",
+                    "reason": reason,
                 }
 
         # Execute streaming inference

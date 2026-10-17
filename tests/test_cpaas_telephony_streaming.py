@@ -115,6 +115,26 @@ class TestCPaaSTelephonyService:
         assert res["circuit_breaker_active"] is True
         assert session.fail_open_tripped is True
 
+    def test_circuit_breaker_high_risk_step_up_fallback(self):
+        """Verifies high-risk transactions (e.g. Treasury RTGS) fall back to STEP_UP rather than ALLOW."""
+        tight_service = CPaaSTelephonyService(sla_budget_ms=1.0)
+        stream_sid = "STRM-HIGH-RISK-FAIL"
+        session = tight_service.start_session(
+            stream_sid=stream_sid,
+            call_sid="CALL-TREASURY-RTGS",
+            fallback_action="STEP_UP",
+        )
+        session.latencies_ms = [50.0, 65.0, 80.0, 95.0]
+
+        b64_large = base64.b64encode(np.zeros(16000, dtype=np.uint8).tobytes()).decode("utf-8")
+        tight_service.decode_cpaas_media_chunk(b64_large)
+        session.audio_chunks = [np.zeros(25000, dtype=np.float32)]
+
+        res = tight_service.process_media_event(stream_sid, b64_large, sequence_number=5)
+        assert res["status"] == "CIRCUIT_BREAKER_FAIL_OPEN"
+        assert res["action"] == "STEP_UP"
+        assert "prevent DoS authentication bypass" in res["reason"]
+
 
 class TestCPaaSTelephonyEndpoints:
     def test_get_cpaas_config_endpoint(self, client):

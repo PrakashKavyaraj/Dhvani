@@ -59,33 +59,32 @@ class VendorDueDiligenceService:
         """
         return {
             "vendor_name": "Dhvani Voice Integrity Systems Private Limited",
-            "security_framework": "ISO/IEC 27001:2022 and SOC 2 Type II Aligned",
-            "audit_period": "Annual External Audit Cycle (2026-2027)",
+            "security_framework": "ISO/IEC 27001:2022 and SOC 2 Type II Aligned Security Architecture",
+            "audit_period": "Annual External Audit Cycle (2026-2027 Roadmap)",
             "certifications": [
                 {
                     "standard": "ISO/IEC 27001:2022",
                     "scope": "Design, engineering, deployment, and management of AI voice fraud detection systems",
-                    "certification_status": "CERTIFIED_IN_AUDIT_CYCLE",
-                    "issuing_registrar": "BSI / DNV Business Assurance",
-                    "certificate_id": "ISO27001-IND-2026-9812",
+                    "alignment_status": "CONTROLS_ALIGNED_ROADMAP_PREPARED",
+                    "audit_roadmap": "Architecture and ISMS policies engineered to align with ISO/IEC 27001:2022 Annex A controls. Formal certification audit targeted with accredited registrar upon commercial banking deployment.",
+                    "readiness": "AUDIT_READY_DOCUMENTATION_TEMPLATE",
                 },
                 {
                     "standard": "SOC 2 Type II (AICPA Trust Services Criteria)",
                     "scope": "Security, Confidentiality, and Processing Integrity of cloud and on-premises deployments",
-                    "certification_status": "ATTESTED_TYPE_II",
-                    "audit_firm": "Independent Big-4 Advisory Firm",
+                    "alignment_status": "CONTROLS_ALIGNED_ROADMAP_PREPARED",
+                    "audit_roadmap": "Controls implemented across Security, Confidentiality, and Processing Integrity trust principles. Scheduled for independent external CPA observation period.",
                     "trust_criteria": ["Security", "Confidentiality", "Processing Integrity"],
                 },
                 {
                     "standard": "Independent Third-Party Penetration Testing & Red Teaming",
                     "scope": "API endpoints, SIP/RTP media streaming buffers, WebSocket protocol, and adversarial acoustic injection",
-                    "certification_status": "ZERO_CRITICAL_ZERO_HIGH_VULNERABILITIES",
-                    "test_date": "2026-08-20",
-                    "methodology": "OWASP API Security Top 10 + CREST Accredited Adversarial Voice Replay Assessment",
+                    "testing_status": "AUTOMATED_CODE_REVIEW_AND_INTERNAL_RED_TEAMING",
+                    "methodology": "OWASP API Security Top 10 hardening completed; independent CREST-accredited external penetration test scheduled for pilot phase.",
                 },
             ],
             "key_management": {
-                "hsm_integration": "FIPS 140-2 Level 3 / PKCS#11 Hardware Security Module support",
+                "hsm_integration": "FIPS 140-2 Level 3 / PKCS#11 Hardware Security Module support (tested with local PKCS#11 stub; Cloud KMS production ready)",
                 "storage_mode": "Zero persistent plaintext secrets in environment variables or configuration files",
                 "automated_rotation_interval": "90 Days with zero-downtime dual-key decryption window",
                 "active_keys": self._key_rotation_log,
@@ -105,7 +104,8 @@ class VendorDueDiligenceService:
         """
         return {
             "framework": "RBI Master Direction on Outsourcing of Financial Services & FREE-AI Third-Party AI Governance",
-            "due_diligence_status": "APPROVED_FOR_SCHEDULED_COMMERCIAL_BANKS",
+            "due_diligence_status": "SUPPORTING_BANK_FREE_AI_AND_OUTSOURCING_COMPLIANCE",
+            "legal_clarification": "Compliance with RBI FREE-AI is the statutory duty of the regulated entity (the Bank). Dhvani provides the technical controls, audit logs, and model risk governance required for the bank to satisfy its regulatory obligations.",
             "covenants": [
                 {
                     "covenant_id": "RBI-AI-01",
@@ -267,6 +267,8 @@ class VendorDueDiligenceService:
             "certificate_id": cert_id,
             "statute": "Section 63 Bharatiya Sakshya Adhiniyam (BSA), 2023",
             "statutory_purpose": "Court admissibility of electronic records with cryptographic proof",
+            "document_nature": "DRAFT_TECHNICAL_EVIDENCE_AID",
+            "legal_advisory": "This electronic certificate template is an automated technical draft aid. Admissibility under Section 63(4) BSA 2023 requires verification, completion, and physical/digital signature by the lawful custodian and/or designated technical expert, subject to legal counsel review.",
             "issued_at": now.isoformat(),
             "officer_name": officer_name,
             "officer_designation": officer_designation,

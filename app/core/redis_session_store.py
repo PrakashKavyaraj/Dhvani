@@ -231,10 +231,53 @@ class RedisSessionStore:
             self._mem_sessions.pop(sid, None)
             self._mem_session_timestamps.pop(sid, None)
 
+    def verify_zero_disk_persistence(self) -> Dict[str, Any]:
+        """
+        Audits storage configuration to verify no audio touches disk via RDB or AOF logs.
+        Supports DPDP Act 2023 Section 8(7) purpose limitation and storage minimization.
+        Formal legal determination rests with data fiduciary legal counsel.
+        """
+        if self.is_redis_active:
+            try:
+                save_cfg = self._client.config_get("save").get("save", "")
+                aof_cfg = self._client.config_get("appendonly").get("appendonly", "no")
+                is_rdb_disabled = save_cfg == "" or save_cfg == "''"
+                is_aof_disabled = aof_cfg.lower() == "no"
+                zero_disk = is_rdb_disabled and is_aof_disabled
+                return {
+                    "backend": "redis_cluster",
+                    "zero_disk_persistence_verified": zero_disk,
+                    "rdb_snapshots_disabled": is_rdb_disabled,
+                    "aof_logging_disabled": is_aof_disabled,
+                    "compliance_alignment": "Supports DPDP Act 2023 Section 8(7) purpose limitation",
+                    "advisory": (
+                        "Verified: Redis RDB and AOF persistence disabled."
+                        if zero_disk
+                        else "WARNING: Redis persistence enabled. Set 'save \"\"' and 'appendonly no' to prevent audio writing to disk."
+                    ),
+                }
+            except Exception as exc:
+                return {
+                    "backend": "redis_cluster",
+                    "zero_disk_persistence_verified": False,
+                    "error": str(exc),
+                    "advisory": "Could not query Redis CONFIG GET. Restrictive Redis ACLs may prevent inspection.",
+                }
+
+        return {
+            "backend": "in_memory_fallback",
+            "zero_disk_persistence_verified": True,
+            "storage_medium": "volatile_ram_ring_buffer",
+            "disk_writes": "none",
+            "compliance_alignment": "Supports DPDP Act 2023 Section 8(7) purpose limitation",
+            "advisory": "All sliding-window telephony chunks reside exclusively in non-persisted volatile memory.",
+        }
+
     def get_health(self) -> Dict[str, Any]:
         """
         Returns telemetry regarding the telephony session store.
         """
+        zero_disk_audit = self.verify_zero_disk_persistence()
         if self.is_redis_active:
             try:
                 t0 = time.perf_counter()
@@ -246,6 +289,7 @@ class RedisSessionStore:
                     "latency_ms": round(latency_ms, 2),
                     "redis_url": self._redis_url,
                     "default_ttl_seconds": self._default_ttl,
+                    "zero_disk_audit": zero_disk_audit,
                 }
             except Exception as exc:
                 return {
@@ -253,6 +297,7 @@ class RedisSessionStore:
                     "status": "DEGRADED",
                     "reason": str(exc),
                     "active_sessions": len(self._mem_sessions),
+                    "zero_disk_audit": zero_disk_audit,
                 }
 
         return {
@@ -260,6 +305,7 @@ class RedisSessionStore:
             "status": "OPERATIONAL",
             "active_sessions": len(self._mem_sessions),
             "default_ttl_seconds": self._default_ttl,
+            "zero_disk_audit": zero_disk_audit,
         }
 
 
