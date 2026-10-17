@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-10-17T22:07:16Z",
+  "model_architecture": "AASIST-L (Official PyTorch Weights, 416KB Checkpoint)",
+  "hardware_environment": {
+    "system": "Darwin",
+    "release": "27.0.0",
+    "machine": "arm64",
+    "processor": "arm",
+    "python_version": "3.14.3",
+    "torch_version": "2.14.0",
+    "torch_threads": 4,
+    "cuda_available": false,
+    "mps_available": true
+  },
+  "benchmarks": {
+    "1.5s_window": {
+      "window_seconds": 1.5,
+      "sample_count": 24000,
+      "warmup_runs": 1,
+      "benchmark_runs": 5,
+      "latency_p50_ms": 392.49,
+      "latency_p90_ms": 396.9,
+      "latency_p95_ms": 398.28,
+      "latency_p99_ms": 399.38,
+      "latency_min_ms": 386.71,
+      "latency_max_ms": 399.66,
+      "latency_mean_ms": 391.81,
+      "latency_stdev_ms": 4.65,
+      "sla_budget_ms": 350.0,
+      "sla_compliance_pct": 0.0
+    },
+    "3.0s_window": {
+      "window_seconds": 3.0,
+      "sample_count": 48000,
+      "warmup_runs": 1,
+      "benchmark_runs": 5,
+      "latency_p50_ms": 415.41,
+      "latency_p90_ms": 425.33,
+      "latency_p95_ms": 428.04,
+      "latency_p99_ms": 430.21,
+      "latency_min_ms": 399.35,
+      "latency_max_ms": 430.75,
+      "latency_mean_ms": 412.98,
+      "latency_stdev_ms": 11.33,
+      "sla_budget_ms": 350.0,
+      "sla_compliance_pct": 0.0
+    }
+  }
+}

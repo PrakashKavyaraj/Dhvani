@@ -53,7 +53,7 @@ class TestTelephonySandboxCaller:
 
         # Markdown report check
         md = format_carrier_markdown_report(result)
-        assert "# Dhvani Carrier Integration: Sandbox Call Report" in md
+        assert "# Dhvani Carrier Protocol Simulation Report: EXOTEL Framing" in md
         assert "EXOTEL" in md
 
     def test_run_in_process_twilio_call(self):

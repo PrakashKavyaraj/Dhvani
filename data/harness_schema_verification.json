@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-10-17T21:57:49Z",
-  "eval_spec": "Dhvani Zero-Leakage External Manifest Evaluation (asvspoof5_sample_manifest.csv)",
-  "manifest_path": "data/asvspoof5_sample_manifest.csv",
+  "timestamp": "2026-10-17T22:10:00Z",
+  "eval_spec": "Dhvani Zero-Leakage External Manifest Evaluation (harness_sanity_fixture.csv)",
+  "manifest_path": "data/harness_sanity_fixture.csv",
   "manifest_summary": {
     "total_trials": 32,
     "scored_trials": 32,
@@ -13,7 +13,35 @@
     "eval_spoof": 10,
     "holdout_generators": [
       "ElevenLabs"
-    ]
+    ],
+    "rule_of_three_miss_upper_pct": 30.0,
+    "rule_of_three_fa_upper_pct": 21.43,
+    "sample_size_warnings": [
+      "INSUFFICIENT_CALIBRATION_SAMPLE_SIZE: Dev partition has 2 bonafide and 6 spoof trials. Platt scaling requires at least 100 trials per class to prevent parameter distortion and logistic overfitting.",
+      "LOW_EVALUATION_STATISTICAL_POWER: Eval partition contains only 10 spoof trials. Per the Rule of Three, observing 0 misses over 10 trials only bounds the true miss rate to <= 30.0% at 95% confidence. Statistically significant external proof requires >= 300 spoofs per condition."
+    ],
+    "leakage_audit_matrix": {
+      "speaker_disjointness": {
+        "status": "PASS",
+        "dev_unique_speakers": 4,
+        "eval_unique_speakers": 12
+      },
+      "generator_partitioning": {
+        "status": "PASS",
+        "holdout_zero_day_generators": [
+          "ElevenLabs"
+        ],
+        "provenance_disclosure": "Commercial TTS (e.g. ElevenLabs) is an external out-of-domain addition not present in official ASVspoof 5 tracks."
+      },
+      "calibration_isolation": {
+        "status": "PASS",
+        "rule": "Platt parameters fit strictly on Dev partition; zero parameter tuning on Eval."
+      },
+      "threshold_isolation": {
+        "status": "PASS",
+        "rule": "Bayes operating thresholds calculated from prior and cost matrix; no threshold tuning on Eval."
+      }
+    }
   },
   "overall_evaluation": {
     "sample_counts": {

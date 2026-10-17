@@ -280,10 +280,12 @@ class TestBenchmarkSuiteIntegration:
         assert "manifest_summary" in report
         assert "overall_evaluation" in report
         assert report["overall_evaluation"]["eer_percent"] == 0.0
-        assert "clean_16k" in report["codec_benchmarks"]
-        assert "Hindi" in report["language_benchmarks"]
+        assert report["manifest_summary"]["rule_of_three_miss_upper_pct"] > 0.0
+        assert len(report["manifest_summary"]["sample_size_warnings"]) > 0
 
         md = format_markdown_report(report)
         assert "## Dataset Manifest & Partition Summary" in md
         assert "## Overall Held-out Biometric Benchmark" in md
+        assert "## Multi-Dimensional Leakage Audit" in md
+        assert "Statistical Power & Sample Size Notice" in md
 

@@ -321,17 +321,21 @@ async def run_remote_sandbox_call(
 
 
 def format_carrier_markdown_report(result: Dict[str, Any]) -> str:
-    """Formats sandbox caller results into an executive Markdown report."""
+    """Formats carrier protocol simulation results into an executive Markdown report."""
     md = []
-    md.append("# Dhvani Carrier Integration: Sandbox Call Report")
-    md.append(f"**Carrier Provider:** {result['provider'].upper()}")
+    md.append(f"# Dhvani Carrier Protocol Simulation Report: {result['provider'].upper()} Framing")
+    md.append(f"**Carrier Specification:** {result['provider'].upper()} Media Streaming Protocol")
     md.append(f"**Stream SID:** `{result['stream_sid']}`")
     md.append(f"**Call SID:** `{result['call_sid']}`")
     md.append(f"**Caller ANI:** `{result['caller_ani']}`")
-    md.append(f"**Encoding:** `{result['codec']}`\n")
+    md.append(f"**Audio Encoding:** `{result['codec']}`\n")
+
+    md.append("## Test Scope & Boundary Disclosure")
+    md.append("* **What This Demonstrates**: Validates WebSocket protocol schema compliance, G.711 companding/resampling, turn event demultiplexing, and in-memory buffer lifecycle under carrier-specified framing.")
+    md.append("* **What This Does NOT Demonstrate**: This is an in-process protocol simulation harness, not a live PSTN internet call. Live carrier proof requires an active provider account, a publicly routable webhook (<Stream> on Twilio, Audio Streaming applet on Exotel), and a live phone connection.\n")
 
     md.append("## Handshake & Streaming Latency Profile")
-    md.append(f"* **WebSocket Handshake Latency:** {result['handshake_latency_ms']} ms")
+    md.append(f"* **WebSocket Handshake Latency:** {result['handshake_latency_ms']} ms (In-process socket loopback)")
     md.append(f"* **Carrier Start Event ACK:** {result['start_ack_latency_ms']} ms")
     md.append(f"* **Total Turns Streamed:** {result['total_turns_streamed']}")
     md.append(f"* **Median (p50) Turn Latency:** {result['turn_latencies']['p50_ms']} ms")
@@ -339,7 +343,7 @@ def format_carrier_markdown_report(result: Dict[str, Any]) -> str:
     md.append(f"* **p95 Turn Latency:** {result['turn_latencies']['p95_ms']} ms")
     md.append(f"* **p99 Turn Latency:** {result['turn_latencies']['p99_ms']} ms")
     md.append(f"* **Maximum Turn Latency:** {result['turn_latencies']['max_ms']} ms")
-    md.append(f"* **350ms SLA Compliance Rate:** **{result['sla_compliance_pct']}%**\n")
+    md.append(f"* **Ingress SLA Compliance Rate:** **{result['sla_compliance_pct']}%**\n")
 
     md.append("## Teardown & Privacy Audit")
     summary = result.get("teardown_summary", {})
@@ -347,7 +351,12 @@ def format_carrier_markdown_report(result: Dict[str, Any]) -> str:
     disk = summary.get("raw_disk_bytes", 0)
     md.append(f"* **Session Status:** {summary.get('status', 'CLOSED')}")
     md.append(f"* **DPDP Zeroized Audio Samples:** {wiped}")
-    md.append(f"* **Zero-Disk Retention Invariant:** {disk} raw audio bytes persisted to disk\n")
+    md.append(f"* **Internal Buffer Audit:** {disk} raw audio bytes persisted to disk\n")
+
+    md.append("## External Zero-Disk Verification Controls")
+    md.append("* **Container Enforcement**: In production Docker deployments, enforce read-only rootfs (`read_only: true`) and in-memory tmpfs (`tmpfs: /tmp:rw,noexec,nosuid,size=64m`).")
+    md.append("* **OS Syscall Tracing**: Verify with external tracing tools (`strace -e trace=open,openat,creat,write` on Linux or `fs_usage` on macOS) that zero file descriptors are opened for raw audio during call execution.")
+    md.append("* **Memory Leakage Defenses**: Enforce disabled or encrypted swap (`swapoff -a`) and core dump suppression (`ulimit -c 0`) to prevent volatile RAM buffers from paging to disk.\n")
 
     md.append("## Latest Detection Verdict")
     verdict = result.get("final_verdict", {})

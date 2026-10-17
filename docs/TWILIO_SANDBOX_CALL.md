@@ -1,25 +1,34 @@
-# Dhvani Carrier Integration: Sandbox Call Report
-**Carrier Provider:** TWILIO
-**Stream SID:** `TWILIO-STRM-1792274149469`
-**Call SID:** `TWILIO-CALL-1792274149469`
+# Dhvani Carrier Protocol Simulation Report: TWILIO Framing
+**Carrier Specification:** TWILIO Media Streaming Protocol
+**Stream SID:** `TWILIO-STRM-1792274939044`
+**Call SID:** `TWILIO-CALL-1792274939044`
 **Caller ANI:** `+919876543210`
-**Encoding:** `audio/x-mulaw`
+**Audio Encoding:** `audio/x-mulaw`
+
+## Test Scope & Boundary Disclosure
+* **What This Demonstrates**: Validates WebSocket protocol schema compliance, G.711 companding/resampling, turn event demultiplexing, and in-memory buffer lifecycle under carrier-specified framing.
+* **What This Does NOT Demonstrate**: This is an in-process protocol simulation harness, not a live PSTN internet call. Live carrier proof requires an active provider account, a publicly routable webhook (<Stream> on Twilio, Audio Streaming applet on Exotel), and a live phone connection.
 
 ## Handshake & Streaming Latency Profile
-* **WebSocket Handshake Latency:** 21.28 ms
-* **Carrier Start Event ACK:** 0.32 ms
+* **WebSocket Handshake Latency:** 21.0 ms (In-process socket loopback)
+* **Carrier Start Event ACK:** 0.31 ms
 * **Total Turns Streamed:** 35
 * **Median (p50) Turn Latency:** 0.2 ms
-* **p90 Turn Latency:** 0.26 ms
-* **p95 Turn Latency:** 0.28 ms
-* **p99 Turn Latency:** 0.56 ms
-* **Maximum Turn Latency:** 0.7 ms
-* **350ms SLA Compliance Rate:** **100.0%**
+* **p90 Turn Latency:** 0.27 ms
+* **p95 Turn Latency:** 0.32 ms
+* **p99 Turn Latency:** 0.45 ms
+* **Maximum Turn Latency:** 0.5 ms
+* **Ingress SLA Compliance Rate:** **100.0%**
 
 ## Teardown & Privacy Audit
 * **Session Status:** SESSION_CLOSED
 * **DPDP Zeroized Audio Samples:** 11200
-* **Zero-Disk Retention Invariant:** 0 raw audio bytes persisted to disk
+* **Internal Buffer Audit:** 0 raw audio bytes persisted to disk
+
+## External Zero-Disk Verification Controls
+* **Container Enforcement**: In production Docker deployments, enforce read-only rootfs (`read_only: true`) and in-memory tmpfs (`tmpfs: /tmp:rw,noexec,nosuid,size=64m`).
+* **OS Syscall Tracing**: Verify with external tracing tools (`strace -e trace=open,openat,creat,write` on Linux or `fs_usage` on macOS) that zero file descriptors are opened for raw audio during call execution.
+* **Memory Leakage Defenses**: Enforce disabled or encrypted swap (`swapoff -a`) and core dump suppression (`ulimit -c 0`) to prevent volatile RAM buffers from paging to disk.
 
 ## Latest Detection Verdict
 * **Action:** `CONTINUE_STREAM`

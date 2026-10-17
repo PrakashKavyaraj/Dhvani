@@ -1,14 +1,26 @@
 # Dhvani Voice Integrity: Scientific Evaluation Report
-**Generated:** 2026-10-17T21:57:49Z
-**Evaluation Engine:** Dhvani Zero-Leakage External Manifest Evaluation (asvspoof5_sample_manifest.csv)
+**Generated:** 2026-10-17T22:10:00Z
+**Evaluation Engine:** Dhvani Zero-Leakage External Manifest Evaluation (harness_sanity_fixture.csv)
 
 ## Dataset Manifest & Partition Summary
-* **Manifest Path:** `data/asvspoof5_sample_manifest.csv`
+* **Manifest Path:** `data/harness_sanity_fixture.csv`
 * **Total Scored Trials:** 32 (32 total)
 * **Development Partition (Calibration Fit):** 8 (2 bona, 6 spoof)
 * **Evaluation Partition (Held-out Benchmark):** 24 (14 bona, 10 spoof)
 * **Holdout Zero-Day Generators:** ['ElevenLabs']
-* **Leakage Audit Status:** **ZERO_LEAKAGE_HELD_OUT_EVALUATION** (Speaker & Generator Disjoint)
+* **Rule of Three Statistical Upper Bound (95% Confidence):** Miss Rate <= **30.0%**, False Alarm Rate <= **21.43%**
+
+### Statistical Power & Sample Size Notice
+> [!WARNING] **Sample Size Constraint**: INSUFFICIENT_CALIBRATION_SAMPLE_SIZE: Dev partition has 2 bonafide and 6 spoof trials. Platt scaling requires at least 100 trials per class to prevent parameter distortion and logistic overfitting.
+> [!WARNING] **Sample Size Constraint**: LOW_EVALUATION_STATISTICAL_POWER: Eval partition contains only 10 spoof trials. Per the Rule of Three, observing 0 misses over 10 trials only bounds the true miss rate to <= 30.0% at 95% confidence. Statistically significant external proof requires >= 300 spoofs per condition.
+
+## Multi-Dimensional Leakage Audit
+| Audit Dimension | Status | Verification Detail |
+| :--- | :---: | :--- |
+| **Speaker Identity Disjointness** | **PASS** | Zero speaker overlap (4 dev speakers, 12 eval speakers) |
+| **Generator Isolation** | **PASS** | Holdouts: ['ElevenLabs']. Note: Commercial TTS (e.g. ElevenLabs) is an external out-of-domain addition not present in official ASVspoof 5 tracks. |
+| **Calibration Fit Isolation** | **PASS** | Platt parameters fit strictly on Dev partition; zero parameter tuning on Eval. |
+| **Threshold Isolation** | **PASS** | Bayes operating thresholds calculated from prior and cost matrix; no threshold tuning on Eval. |
 
 ## Overall Held-out Biometric Benchmark
 | Metric | Value | Reference Standard / Interpretation |

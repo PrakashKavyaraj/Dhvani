@@ -65,5 +65,5 @@ class TestConcurrencyLoadRunner:
         assert bench_2["throughput_turns_per_sec"] > 0.0
 
         md_report = format_markdown_load_report(results)
-        assert "# Dhvani Carrier Telephony: Concurrent Load & Latency Report" in md_report
+        assert "# Dhvani Carrier Telephony: Concurrent Ingress & Ring Buffer Latency Report" in md_report
         assert "2" in md_report
