@@ -26,6 +26,7 @@ from app.api.v1.endpoints.multi_tenant import router as multi_tenant_router
 from app.api.v1.endpoints.replay_defense import router as replay_defense_router
 from app.api.v1.endpoints.vendor_due_diligence import router as vendor_router
 from app.api.v1.endpoints.sasv import router as sasv_router
+from app.api.v1.endpoints.metrics import router as metrics_router
 from app.core.config import get_settings
 from app.core.logging import logger
 from app.core.models_loader import load_all_models
@@ -150,6 +151,10 @@ app.include_router(vendor_router, prefix="/api/v1")
 
 # Mount Joint Spoofing-Aware Speaker Verification (SASV) routes
 app.include_router(sasv_router, prefix="/api/v1")
+
+# Mount Production Prometheus Observability & Metrics scraper endpoint
+app.include_router(metrics_router)
+app.include_router(metrics_router, prefix="/api/v1")
 
 # Mount Real-Time WebSocket Streaming Endpoint (/ws/voice-detect)
 app.include_router(websocket_router)
