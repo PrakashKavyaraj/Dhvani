@@ -19,6 +19,9 @@ import {
   Cpu,
   UserCheck,
   FileCheck,
+  Copy,
+  Server,
+  Sliders,
 } from 'lucide-react';
 import {
   fetchModelCards,
@@ -27,6 +30,12 @@ import {
   fetchExplainVerdict,
   submitCustomerDispute,
   fetchCustomerDisputes,
+  fetchTenants,
+  updateTenantPolicy,
+  fetchPgvectorDdl,
+  fetchRedisSessionHealth,
+  fetchTenantStats,
+  purgeCustomerVoiceprint,
 } from '../services/aegisApiClient';
 
 export function ModelGovernanceModal({
@@ -43,6 +52,16 @@ export function ModelGovernanceModal({
   const [explainResult, setExplainResult] = useState(null);
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Multi-Tenant & Scalability state
+  const [tenants, setTenants] = useState([]);
+  const [selectedTenantId, setSelectedTenantId] = useState('HDFC-BANK');
+  const [tenantStats, setTenantStats] = useState(null);
+  const [pgvectorDdl, setPgvectorDdl] = useState('');
+  const [redisHealth, setRedisHealth] = useState(null);
+  const [purgeAccountId, setPurgeAccountId] = useState('');
+  const [purgeSuccess, setPurgeSuccess] = useState(null);
+  const [copiedDdl, setCopiedDdl] = useState(false);
 
   // Dispute Form state
   const [disputeForm, setDisputeForm] = useState({
@@ -64,16 +83,24 @@ export function ModelGovernanceModal({
   const loadGovernanceData = async () => {
     setLoading(true);
     try {
-      const [cardsRes, matrixRes, dpdpRes, disputesRes] = await Promise.all([
+      const [cardsRes, matrixRes, dpdpRes, disputesRes, tenantsRes, ddlRes, redisRes, statsRes] = await Promise.all([
         fetchModelCards({ apiBaseUrl }),
         fetchRbiFreeAiMatrix({ apiBaseUrl }),
         fetchDpdpCompliance({ apiBaseUrl }),
         fetchCustomerDisputes({ apiBaseUrl }),
+        fetchTenants({ apiBaseUrl }),
+        fetchPgvectorDdl({ apiBaseUrl }),
+        fetchRedisSessionHealth({ apiBaseUrl }),
+        fetchTenantStats('HDFC-BANK', { apiBaseUrl }),
       ]);
       setModelCards(cardsRes.model_cards || {});
       setFreeAiMatrix(matrixRes);
       setDpdpProfile(dpdpRes);
       setDisputes(disputesRes.disputes || []);
+      setTenants(tenantsRes.tenants || []);
+      setPgvectorDdl(ddlRes.sql_schema || '');
+      setRedisHealth(redisRes);
+      setTenantStats(statsRes);
 
       // If we have an analysis result, generate plain-language explanation
       if (analysisResult) {
@@ -95,6 +122,36 @@ export function ModelGovernanceModal({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTenantSelect = async (tenantId) => {
+    setSelectedTenantId(tenantId);
+    try {
+      const s = await fetchTenantStats(tenantId, { apiBaseUrl });
+      setTenantStats(s);
+    } catch (err) {
+      console.error('Failed to fetch tenant stats:', err);
+    }
+  };
+
+  const handlePurgeCustomer = async (e) => {
+    e.preventDefault();
+    if (!purgeAccountId.trim()) return;
+    try {
+      const res = await purgeCustomerVoiceprint(selectedTenantId, purgeAccountId.trim(), { apiBaseUrl });
+      setPurgeSuccess(res);
+      const s = await fetchTenantStats(selectedTenantId, { apiBaseUrl });
+      setTenantStats(s);
+      setPurgeAccountId('');
+    } catch (err) {
+      alert('Purge failed: ' + err.message);
+    }
+  };
+
+  const handleCopyDdl = () => {
+    navigator.clipboard.writeText(pgvectorDdl);
+    setCopiedDdl(true);
+    setTimeout(() => setCopiedDdl(false), 2000);
   };
 
   const handleDisputeSubmit = async (e) => {
@@ -159,6 +216,7 @@ export function ModelGovernanceModal({
             { id: 'dpdp_compliance', label: 'DPDP Act & Rules 2025', icon: Lock },
             { id: 'plain_xai', label: 'Plain-Language XAI', icon: HelpCircle },
             { id: 'customer_dispute', label: 'Customer Contestation', icon: UserCheck },
+            { id: 'multi_tenant', label: 'Multi-Tenant & pgvector', icon: Server },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -657,6 +715,186 @@ export function ModelGovernanceModal({
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 6: MULTI-TENANT & PGVECTOR ARCHITECTURE */}
+              {activeTab === 'multi_tenant' && (
+                <div className="space-y-6">
+                  {/* Bank Tenant Selection Grid */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-mono uppercase tracking-wider text-amber-400 font-bold flex items-center gap-1.5">
+                        <Server className="w-3.5 h-3.5" /> Multi-Tenant Financial Institution Isolation
+                      </h4>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        Select tenant to inspect dedicated risk policy & biometric vault
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                      {tenants.map((t) => {
+                        const isSel = selectedTenantId === t.tenant_id;
+                        return (
+                          <button
+                            key={t.tenant_id}
+                            type="button"
+                            onClick={() => handleTenantSelect(t.tenant_id)}
+                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                              isSel
+                                ? 'bg-amber-500/15 border-amber-500/50 text-white shadow-md'
+                                : 'bg-black/30 border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs font-bold text-amber-300">
+                                {t.tenant_id}
+                              </span>
+                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-slate-300">
+                                {t.tier}
+                              </span>
+                            </div>
+                            <span className="block text-[11px] font-medium text-slate-200 mt-1 truncate">
+                              {t.institution_name}
+                            </span>
+                            <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-2 pt-1.5 border-t border-white/5">
+                              <span>Block: {t.block_threshold}%</span>
+                              <span>SLA: {t.sla_budget_ms}ms</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Tenant Policy & Vault Statistics Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Active Tenant Policy */}
+                    <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-1.5">
+                          <Sliders className="w-3.5 h-3.5 text-amber-400" /> Operational Policy: {selectedTenantId}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          FAIL-OPEN ACTIVE
+                        </span>
+                      </div>
+
+                      {tenantStats && (
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="p-2.5 rounded-lg bg-slate-800/40 border border-white/5">
+                            <span className="block text-[10px] font-mono text-slate-400">Block Threshold</span>
+                            <span className="block font-bold text-rose-400 text-sm mt-0.5">
+                              {tenantStats.policy?.block_threshold}%
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-lg bg-slate-800/40 border border-white/5">
+                            <span className="block text-[10px] font-mono text-slate-400">Step-Up Threshold</span>
+                            <span className="block font-bold text-amber-400 text-sm mt-0.5">
+                              {tenantStats.policy?.step_up_threshold}%
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-lg bg-slate-800/40 border border-white/5">
+                            <span className="block text-[10px] font-mono text-slate-400">Telephony SLA Budget</span>
+                            <span className="block font-bold text-cyan-400 text-sm mt-0.5">
+                              {tenantStats.policy?.sla_budget_ms} ms
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-lg bg-slate-800/40 border border-white/5">
+                            <span className="block text-[10px] font-mono text-slate-400">Enrolled Voiceprints</span>
+                            <span className="block font-bold text-emerald-400 text-sm mt-0.5">
+                              {tenantStats.vault?.enrolled_voiceprints ?? 0}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Distributed Redis Telephony Buffer Health */}
+                    <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-1.5">
+                          <Cpu className="w-3.5 h-3.5 text-cyan-400" /> Distributed Telephony Buffer
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                          {redisHealth?.backend === 'redis_cluster' ? 'REDIS CLUSTER' : 'RAM VOLATILE'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 text-xs">
+                        <div className="p-2.5 rounded-lg bg-slate-800/40 border border-white/5 flex justify-between items-center">
+                          <span className="text-slate-400">Storage Architecture:</span>
+                          <span className="font-mono text-slate-200">Ephemeral Sliding Window (Zero Disk)</span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-slate-800/40 border border-white/5 flex justify-between items-center">
+                          <span className="text-slate-400">Sliding Window Auto-TTL:</span>
+                          <span className="font-mono text-emerald-400 font-bold">15 seconds (DPDP Sec 8(7))</span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-slate-800/40 border border-white/5 flex justify-between items-center">
+                          <span className="text-slate-400">Vector Search Engine:</span>
+                          <span className="font-mono text-amber-400">pgvector HNSW / Cosine Space</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* DPDP Section 12 Right to Erasure */}
+                  <form onSubmit={handlePurgeCustomer} className="p-4 rounded-xl bg-rose-950/20 border border-rose-500/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono uppercase tracking-wider text-rose-400 font-bold flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5" /> DPDP Section 12: Customer Right to Erasure
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        Target Tenant: {selectedTenantId}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2.5">
+                      <input
+                        type="text"
+                        placeholder="Enter Customer Account ID to permanently purge (e.g. CUST-9901)"
+                        value={purgeAccountId}
+                        onChange={(e) => setPurgeAccountId(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-rose-400"
+                      />
+                      <button
+                        type="submit"
+                        className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-mono font-bold text-xs shrink-0 cursor-pointer transition-all shadow-md"
+                      >
+                        Purge Voiceprint
+                      </button>
+                    </div>
+
+                    {purgeSuccess && (
+                      <p className="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        Purged {purgeSuccess.records_purged} record(s) for {purgeSuccess.customer_account_id} in {purgeSuccess.tenant_id}.
+                      </p>
+                    )}
+                  </form>
+
+                  {/* PostgreSQL 16 + pgvector DDL Schema Box */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold flex items-center gap-1.5">
+                        <Database className="w-3.5 h-3.5 text-amber-400" /> PostgreSQL 16 + pgvector Enterprise DDL
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={handleCopyDdl}
+                        className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-xs font-mono text-slate-200 transition-colors cursor-pointer"
+                      >
+                        <Copy className="w-3 h-3 text-amber-400" />
+                        <span>{copiedDdl ? 'Copied to Clipboard!' : 'Copy SQL Schema'}</span>
+                      </button>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-black/60 border border-white/10 overflow-x-auto max-h-56">
+                      <pre className="font-mono text-[11px] text-cyan-300 leading-relaxed">
+                        {pgvectorDdl}
+                      </pre>
                     </div>
                   </div>
                 </div>

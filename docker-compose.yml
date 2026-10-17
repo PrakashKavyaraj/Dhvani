@@ -1,6 +1,38 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: dhvani-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=dhvani_enterprise
+      - POSTGRES_USER=dhvani_admin
+      - POSTGRES_PASSWORD=dhvani_secure_password_2026
+    volumes:
+      - dhvani-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dhvani_admin -d dhvani_enterprise"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dhvani-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - dhvani-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   backend:
     build:
       context: .
@@ -16,8 +48,18 @@ services:
       - AUDIT_SECRET=DHVANI_AUDIT_SIGNING_KEY_V5
       - SESSION_TTL_SECONDS=3600
       - SECURE_MEMORY_WIPE=true
+      - DATABASE_URL=postgresql://dhvani_admin:dhvani_secure_password_2026@postgres:5432/dhvani_enterprise
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_SESSION_TTL_SECONDS=15
+      - DEFAULT_TENANT_ID=HDFC-BANK
+      - ENABLE_PGVECTOR=true
     volumes:
       - dhvani-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -27,7 +69,7 @@ services:
 
   frontend:
     build:
-      context: ../frontend
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: dhvani-frontend
     restart: unless-stopped
@@ -38,4 +80,8 @@ services:
 
 volumes:
   dhvani-data:
+    driver: local
+  dhvani-pgdata:
+    driver: local
+  dhvani-redisdata:
     driver: local

@@ -1,0 +1,111 @@
+# Default Helm values for Dhvani Bank Deployment
+
+global:
+  environment: production
+  bankTenantId: HDFC-BANK
+
+backend:
+  replicaCount: 3
+  image:
+    repository: dhvani/voice-integrity-backend
+    pullPolicy: IfNotPresent
+    tag: "1.2.0"
+  resources:
+    limits:
+      cpu: "4000m"
+      memory: "8Gi"
+    requests:
+      cpu: "1000m"
+      memory: "4Gi"
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 12
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 80
+  securityContext:
+    runAsUser: 10001
+    runAsGroup: 10001
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+  env:
+    DETECTOR_BACKEND: transformers
+    SECURE_MEMORY_WIPE: "true"
+    REDIS_SESSION_TTL_SECONDS: "15"
+    SLA_BUDGET_MS: "350"
+    DEFAULT_TENANT_ID: "HDFC-BANK"
+    ENABLE_PGVECTOR: "true"
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: dhvani/voice-integrity-frontend
+    pullPolicy: IfNotPresent
+    tag: "1.2.0"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+
+postgresql:
+  enabled: true
+  auth:
+    database: dhvani_enterprise
+    username: dhvani_admin
+  primary:
+    extendedConfiguration: |
+      shared_preload_libraries = 'vector'
+    resources:
+      limits:
+        cpu: "2000m"
+        memory: "4Gi"
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+    persistence:
+      enabled: true
+      size: 50Gi
+
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    resources:
+      limits:
+        cpu: "1000m"
+        memory: "2Gi"
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/websocket-services: "dhvani-backend"
+  hosts:
+    - host: voice-security.internal.hdfcbank.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /ws
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls:
+    - secretName: dhvani-internal-tls
+      hosts:
+        - voice-security.internal.hdfcbank.com

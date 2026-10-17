@@ -1,0 +1,25 @@
+apiVersion: v2
+name: dhvani
+description: Bank-Grade Voice Fraud Prevention Platform for Indian Telephony (RBI FREE-AI & DPDP 2025 Compliant)
+type: application
+version: 1.2.0
+appVersion: "1.2.0"
+keywords:
+  - voice-security
+  - deepfake-detection
+  - banking
+  - rbi-free-ai
+  - dpdp-compliant
+  - telephony-cpaas
+maintainers:
+  - name: Dhvani Enterprise Architecture Team
+    email: security@dhvani.ai
+dependencies:
+  - name: postgresql
+    version: 13.2.24
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: 18.1.5
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled

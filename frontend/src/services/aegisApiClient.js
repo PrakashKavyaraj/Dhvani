@@ -1344,3 +1344,92 @@ export async function fetchCustomerDisputes(options = {}) {
   return await res.json();
 }
 
+/**
+ * Multi-Tenant Enterprise: Fetch all configured bank tenants and policies.
+ */
+export async function fetchTenants(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/tenants`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch tenants: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Multi-Tenant Enterprise: Update or register bank tenant policy.
+ */
+export async function updateTenantPolicy(payload, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/tenants`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || `Policy update failed: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Multi-Tenant Enterprise: Fetch PostgreSQL 16 + pgvector DDL deployment script.
+ */
+export async function fetchPgvectorDdl(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/tenants/pgvector-ddl`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch pgvector DDL: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Multi-Tenant Enterprise: Fetch Redis ephemeral session buffer health.
+ */
+export async function fetchRedisSessionHealth(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/tenants/redis-session/health`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Redis session health: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Multi-Tenant Enterprise: Fetch tenant biometric vault statistics.
+ */
+export async function fetchTenantStats(tenantId, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/tenants/${encodeURIComponent(tenantId)}/stats`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch tenant stats: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Multi-Tenant Enterprise: DPDP Section 12 Right to Erasure customer voiceprint purge.
+ */
+export async function purgeCustomerVoiceprint(tenantId, customerAccountId, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/tenants/${encodeURIComponent(tenantId)}/purge-customer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customer_account_id: customerAccountId }),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || `Customer purge failed: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+

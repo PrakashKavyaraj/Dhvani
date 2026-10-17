@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -52,6 +53,15 @@ class Settings(BaseSettings):
     AUDIT_SECRET: str = "DHVANI_AUDIT_SIGNING_KEY_V5"
     SESSION_TTL_SECONDS: int = 3600  # 1 hour in-memory session drift TTL
     SECURE_MEMORY_WIPE: bool = True
+
+    # Enterprise Scalability: PostgreSQL, pgvector & Redis
+    DATABASE_URL: Optional[str] = None
+    REDIS_URL: Optional[str] = "redis://localhost:6379/0"
+    REDIS_SESSION_TTL_SECONDS: int = 15
+    DEFAULT_TENANT_ID: str = "HDFC-BANK"
+    ENABLE_PGVECTOR: bool = False
+    TENANT_HEADER: str = "X-Tenant-ID"
+    API_KEY_HEADER: str = "X-API-Key"
 
     model_config = SettingsConfigDict(
         env_file=".env",
