@@ -20,6 +20,7 @@ from app.api.v1.endpoints.edge import router as edge_router
 from app.api.v1.endpoints.docket import router as docket_router
 from app.api.v1.endpoints.federation import router as federation_router
 from app.api.v1.endpoints.sandbox import router as sandbox_router
+from app.api.v1.endpoints.telephony_stream import router as cpaas_telephony_router
 from app.core.config import get_settings
 from app.core.logging import logger
 from app.core.models_loader import load_all_models
@@ -126,6 +127,9 @@ app.include_router(federation_router, prefix="/api/v1")
 
 # Mount Developer Sandbox & Multi-Language SDK Playground routes
 app.include_router(sandbox_router, prefix="/api/v1")
+
+# Mount Carrier CPaaS & SIPREC Real-Time Media Stream Ingestion routes
+app.include_router(cpaas_telephony_router, prefix="/api/v1")
 
 # Mount Real-Time WebSocket Streaming Endpoint (/ws/voice-detect)
 app.include_router(websocket_router)
