@@ -1432,4 +1432,49 @@ export async function purgeCustomerVoiceprint(tenantId, customerAccountId, optio
   return await res.json();
 }
 
+/**
+ * Adversarial Replay Defense: Inspect audio for acoustic loudspeaker replay attacks.
+ */
+export async function fetchReplayAnalysis(audioSamples, options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/replay-defense/inspect-acoustic-replay`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ audio_samples: audioSamples, sample_rate: options.sampleRate || 16000 }),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.detail || `Replay inspection failed: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Adversarial & Multilingual: Fetch frozen benchmark report.
+ */
+export async function fetchMultilingualBenchmark(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/replay-defense/multilingual-benchmark`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch multilingual benchmark: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+/**
+ * Indian Dialects: Fetch regional dialect coverage and phonetic features.
+ */
+export async function fetchIndianDialects(options = {}) {
+  const { apiBaseUrl = DEFAULT_AEGIS_API_URL } = options;
+  const base = apiBaseUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/v1/replay-defense/dialects`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Indian dialects: HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+
 

@@ -23,6 +23,7 @@ from app.api.v1.endpoints.sandbox import router as sandbox_router
 from app.api.v1.endpoints.telephony_stream import router as cpaas_telephony_router
 from app.api.v1.endpoints.governance import router as governance_router
 from app.api.v1.endpoints.multi_tenant import router as multi_tenant_router
+from app.api.v1.endpoints.replay_defense import router as replay_defense_router
 from app.core.config import get_settings
 from app.core.logging import logger
 from app.core.models_loader import load_all_models
@@ -49,7 +50,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="AI-Powered Voice Integrity & Security Risk Engine — V1",
+    title="AI-Powered Voice Integrity & Security Risk Engine: V1",
     description=(
         "Production-ready voice authenticity & security evaluation service integrating "
         "Member 1 (ML Deepfake Classifier), Member 2 (DSP Acoustic Preprocessing), and "
@@ -138,6 +139,9 @@ app.include_router(governance_router, prefix="/api/v1")
 
 # Mount Multi-Tenant Enterprise Architecture & pgvector routes
 app.include_router(multi_tenant_router, prefix="/api/v1")
+
+# Mount Adversarial Replay Defense & Indian Multilingual Benchmark routes
+app.include_router(replay_defense_router, prefix="/api/v1")
 
 # Mount Real-Time WebSocket Streaming Endpoint (/ws/voice-detect)
 app.include_router(websocket_router)
