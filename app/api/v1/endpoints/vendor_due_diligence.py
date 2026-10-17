@@ -3,9 +3,10 @@ Vendor Due Diligence, Security Controls, and Shadow Mode API Router for Dhvani.
 """
 
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from app.core.security_auth import require_admin_role
 from app.services.vendor_due_diligence_service import due_diligence_service
 from app.services.shadow_mode_service import shadow_mode_engine
 
@@ -112,7 +113,7 @@ def evaluate_shadow_call(payload: ShadowEvaluateRequest) -> Dict[str, Any]:
     )
 
 
-@router.post("/shadow-mode/promote")
+@router.post("/shadow-mode/promote", dependencies=[Depends(require_admin_role)])
 def promote_shadow_model(payload: ShadowPromoteRequest) -> Dict[str, Any]:
     """
     Promotes the candidate shadow model to active production.
@@ -120,7 +121,7 @@ def promote_shadow_model(payload: ShadowPromoteRequest) -> Dict[str, Any]:
     return shadow_mode_engine.promote_candidate_to_primary(officer_id=payload.officer_id)
 
 
-@router.post("/shadow-mode/reset-circuit-breaker")
+@router.post("/shadow-mode/reset-circuit-breaker", dependencies=[Depends(require_admin_role)])
 def reset_shadow_circuit_breaker() -> Dict[str, Any]:
     """
     Resets the shadow mode circuit breaker after analyst review.

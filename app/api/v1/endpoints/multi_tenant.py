@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.core.redis_session_store import redis_session_store
+from app.core.security_auth import require_admin_role
 from app.services.multi_tenant_vector_store import multi_tenant_vector_store
 from app.services.tenant_policy_service import tenant_policy_service
 
@@ -38,7 +39,7 @@ def list_tenants() -> Dict[str, Any]:
     }
 
 
-@router.post("/tenants")
+@router.post("/tenants", dependencies=[Depends(require_admin_role)])
 def update_tenant_policy(payload: UpdatePolicyRequest) -> Dict[str, Any]:
     """Updates or registers a custom bank risk policy."""
     updated = tenant_policy_service.update_policy(
@@ -110,7 +111,7 @@ def get_tenant_statistics(tenant_id: str) -> Dict[str, Any]:
     }
 
 
-@router.post("/tenants/{tenant_id}/purge-customer")
+@router.post("/tenants/{tenant_id}/purge-customer", dependencies=[Depends(require_admin_role)])
 def purge_customer_voiceprint(tenant_id: str, payload: PurgeCustomerRequest) -> Dict[str, Any]:
     """
     DPDP Act 2023 Section 12 Right to Erasure.

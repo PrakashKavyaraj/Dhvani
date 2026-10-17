@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+from app.core.rate_limiter import rate_limiter
 from app.api.routes import router as legacy_router
 from app.api.v1.endpoints.inference import router as inference_router
 from app.api.v1.endpoints.risk import router as risk_router
@@ -82,6 +83,50 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def security_headers_and_limits_middleware(request: Request, call_next):
+    # 1. Payload size guard (Anti-DoS: reject requests exceeding 25MB)
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > 25 * 1024 * 1024:
+                return Response(
+                    content='{"detail": "Payload too large. Maximum allowable request size is 25MB."}',
+                    status_code=413,
+                    media_type="application/json",
+                )
+        except ValueError:
+            pass
+
+    # 2. Rate limit guard (tighter limits on sensitive administrative endpoints)
+    try:
+        path = request.url.path
+        is_admin = "/tenants" in path or "/vendor/shadow-mode/promote" in path
+        rate_limiter.check_limit(request, max_requests=40 if is_admin else 300, window_seconds=60)
+    except HTTPException as exc:
+        return Response(
+            content=f'{{"detail": "{exc.detail}"}}',
+            status_code=exc.status_code,
+            headers=exc.headers,
+            media_type="application/json",
+        )
+
+    # 3. Process downstream request
+    response = await call_next(request)
+
+    # 4. Inject OWASP enterprise security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(self), payment=(), usb=()"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'none'; object-src 'none'"
+
+    return response
+
 
 # Mount Member 5 Security & Risk Engine routes
 app.include_router(risk_router, prefix="/api/v1")
