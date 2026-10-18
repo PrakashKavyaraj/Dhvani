@@ -1,8 +1,8 @@
 # Dhvani Voice Integrity: Formal Claims Register
 
-**Version:** 1.0 (Audit Baseline)  
+**Version:** 1.1 (Pre-Registered Protocol & Benchmark Audit)  
 **Maintained by:** Dhvani Engineering & Governance  
-**Repository Branch:** `main` (commit: `953db6e`)
+**Repository Branch:** `main` (commit: `ca1ebbb`, tag: `protocol-v1`)
 
 This Claims Register catalogs every technical, operational, and compliance claim made across Dhvani documentation, pilot proposals, and engineering reports. For each claim, it specifies the exact qualifying scope, the proving file, the git commit, and the current verification status.
 
@@ -39,6 +39,7 @@ This Claims Register catalogs every technical, operational, and compliance claim
 | **CLM-BIO-04** | Commercial TTS out-of-domain tracking | ElevenLabs and commercial speech generators are explicitly disclosed as external additions not present in official academic challenge tracks (such as ASVspoof 5). | [`docs/HARNESS_SCHEMA_VERIFICATION.md`](file:///Users/prakashkavyaraj/backend/docs/HARNESS_SCHEMA_VERIFICATION.md) | **Documented & Audited** |
 | **CLM-BIO-05** | Official ASVspoof 5 challenge cost profile alignment | Pre-registered cost profile: $C_{\text{miss}} = 10.0, C_{\text{fa}} = 1.0, P_{\text{target}} = 0.05$ under spoof-positive convention, exactly matching the challenge evaluation plan's penalty of 10 for accepting a spoof and 1 for rejecting bonafide ($\beta \approx 1.90$). | [`app/core/calibration_engine.py`](file:///Users/prakashkavyaraj/backend/app/core/calibration_engine.py), [`docs/ASVSPOOF5_EVALUATION_PROTOCOL.md`](file:///Users/prakashkavyaraj/backend/docs/ASVSPOOF5_EVALUATION_PROTOCOL.md) | **Pre-Registered in Protocol v1.1** |
 | **CLM-BIO-06** | Speaker-clustered bootstrap 95% CIs and Cllr | Computes 95% confidence intervals by resampling speaker clusters with replacement, capturing inter-speaker variance, alongside Brummer & du Preez Log-Likelihood Ratio Cost (Cllr). | [`scripts/evaluation_harness.py`](file:///Users/prakashkavyaraj/backend/scripts/evaluation_harness.py), [`app/core/calibration_engine.py`](file:///Users/prakashkavyaraj/backend/app/core/calibration_engine.py) | **Empirically Verified** (Unit tests passing in `test_evaluation_and_calibration.py`) |
+| **CLM-BIO-07** | Broad ONNX Runtime numerical equivalence | Evaluates ONNX Runtime vs PyTorch graph inference across diverse acoustic inputs (multi-tone sine waves 50Hz to 4kHz, Gaussian noise, DC offsets, varying amplitudes). Maximum absolute logit error is $< 10^{-5}$ ($2.86 \times 10^{-6}$), with 100% argmax decision parity. | [`tests/test_model_inference_benchmark.py`](file:///Users/prakashkavyaraj/backend/tests/test_model_inference_benchmark.py), [`docs/MODEL_INFERENCE_BENCHMARK.md`](file:///Users/prakashkavyaraj/backend/docs/MODEL_INFERENCE_BENCHMARK.md) | **Empirically Verified** (Unit tests passing in `test_model_inference_benchmark.py`) |
 
 ---
 
