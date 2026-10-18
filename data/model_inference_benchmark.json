@@ -1,6 +1,9 @@
 {
-  "timestamp": "2026-10-17T22:07:16Z",
-  "model_architecture": "AASIST-L (Official PyTorch Weights, 416KB Checkpoint)",
+  "timestamp": "2026-10-17T22:28:04Z",
+  "window_seconds": 1.5,
+  "sample_count": 24000,
+  "sla_budget_ms": 350.0,
+  "sla_definition": "Turn turnaround time once the 1.5s/3.0s rolling buffer is ready (buffer handoff to WebSocket emission). Time-to-First-Verdict from call start is 1.5s buffer fill + model compute time.",
   "hardware_environment": {
     "system": "Darwin",
     "release": "27.0.0",
@@ -12,38 +15,72 @@
     "cuda_available": false,
     "mps_available": true
   },
-  "benchmarks": {
-    "1.5s_window": {
-      "window_seconds": 1.5,
-      "sample_count": 24000,
-      "warmup_runs": 1,
-      "benchmark_runs": 5,
-      "latency_p50_ms": 392.49,
-      "latency_p90_ms": 396.9,
-      "latency_p95_ms": 398.28,
-      "latency_p99_ms": 399.38,
-      "latency_min_ms": 386.71,
-      "latency_max_ms": 399.66,
-      "latency_mean_ms": 391.81,
-      "latency_stdev_ms": 4.65,
-      "sla_budget_ms": 350.0,
+  "components": {
+    "forensics_0.3b_wavlm": {
+      "p50_ms": 246.62,
+      "p90_ms": 247.61,
+      "p95_ms": 248.19,
+      "p99_ms": 248.66,
+      "min_ms": 243.6,
+      "max_ms": 248.78,
+      "mean_ms": 246.44,
+      "stdev_ms": 1.38,
+      "sla_compliance_pct": 100.0
+    },
+    "aasist_l": {
+      "p50_ms": 92.41,
+      "p90_ms": 100.54,
+      "p95_ms": 101.39,
+      "p99_ms": 102.07,
+      "min_ms": 91.66,
+      "max_ms": 102.24,
+      "mean_ms": 94.88,
+      "stdev_ms": 3.9,
+      "sla_compliance_pct": 100.0
+    },
+    "aasist_l_onnx": {
+      "p50_ms": 20.62,
+      "p90_ms": 21.52,
+      "p95_ms": 21.59,
+      "p99_ms": 21.65,
+      "min_ms": 20.53,
+      "max_ms": 21.66,
+      "mean_ms": 20.83,
+      "stdev_ms": 0.42,
+      "sla_compliance_pct": 100.0
+    },
+    "ecapa_tdnn": {
+      "p50_ms": 21.47,
+      "p90_ms": 21.68,
+      "p95_ms": 21.75,
+      "p99_ms": 21.82,
+      "min_ms": 21.34,
+      "max_ms": 21.83,
+      "mean_ms": 21.51,
+      "stdev_ms": 0.15,
+      "sla_compliance_pct": 100.0
+    },
+    "full_aegis_ensemble": {
+      "p50_ms": 375.09,
+      "p90_ms": 396.68,
+      "p95_ms": 401.29,
+      "p99_ms": 404.99,
+      "min_ms": 370.67,
+      "max_ms": 405.91,
+      "mean_ms": 380.1,
+      "stdev_ms": 11.71,
       "sla_compliance_pct": 0.0
     },
-    "3.0s_window": {
-      "window_seconds": 3.0,
-      "sample_count": 48000,
-      "warmup_runs": 1,
-      "benchmark_runs": 5,
-      "latency_p50_ms": 415.41,
-      "latency_p90_ms": 425.33,
-      "latency_p95_ms": 428.04,
-      "latency_p99_ms": 430.21,
-      "latency_min_ms": 399.35,
-      "latency_max_ms": 430.75,
-      "latency_mean_ms": 412.98,
-      "latency_stdev_ms": 11.33,
-      "sla_budget_ms": 350.0,
-      "sla_compliance_pct": 0.0
+    "concurrent_aegis_ensemble": {
+      "p50_ms": 259.21,
+      "p90_ms": 261.42,
+      "p95_ms": 261.74,
+      "p99_ms": 262.0,
+      "min_ms": 256.3,
+      "max_ms": 262.06,
+      "mean_ms": 259.5,
+      "stdev_ms": 1.67,
+      "sla_compliance_pct": 100.0
     }
   }
 }

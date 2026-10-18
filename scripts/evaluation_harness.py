@@ -225,6 +225,7 @@ def evaluate_score_set(
         "calibration_metrics": {
             "ece": cal_metrics["ece"],
             "brier_score": cal_metrics["brier"],
+            "cllr": cal_metrics.get("cllr", 1.0),
         },
     }
 
@@ -310,6 +311,112 @@ def evaluate_with_disjoint_calibration(
         "calibrator_params": calibrator.to_dict(),
     }
     return report
+
+
+def compute_speaker_clustered_bootstrap_ci(
+    eval_trials: List[Dict[str, Any]],
+    calibrator: Optional[ProbabilityCalibrator] = None,
+    n_bootstrap: int = 100,
+    seed: int = 42,
+) -> Dict[str, Any]:
+    """
+    Computes 95% bootstrap confidence intervals by resampling speaker clusters with replacement.
+    Resampling at the speaker cluster level models true inter-speaker variance.
+    """
+    if not eval_trials:
+        return {}
+
+    spk_to_trials: Dict[str, List[Dict[str, Any]]] = {}
+    for t in eval_trials:
+        spk = str(t.get("speaker_id", "unknown"))
+        spk_to_trials.setdefault(spk, []).append(t)
+
+    unique_speakers = list(spk_to_trials.keys())
+    if len(unique_speakers) < 2:
+        return {
+            "warning": "Insufficient unique speakers for cluster bootstrap (< 2).",
+            "n_speakers": len(unique_speakers),
+        }
+
+    rng = np.random.RandomState(seed)
+    cal = calibrator or calibration_engine
+
+    eer_dist: List[float] = []
+    asv_mindcf_dist: List[float] = []
+    asv_actdcf_dist: List[float] = []
+    bank_mindcf_dist: List[float] = []
+    bank_actdcf_dist: List[float] = []
+    cllr_dist: List[float] = []
+
+    for _ in range(n_bootstrap):
+        sampled_spks = rng.choice(unique_speakers, size=len(unique_speakers), replace=True)
+        b_bona: List[float] = []
+        b_spoof: List[float] = []
+
+        for s in sampled_spks:
+            for t in spk_to_trials[s]:
+                score = t.get("score")
+                if score is None:
+                    continue
+                if t["label"] == 1:
+                    b_spoof.append(float(score))
+                else:
+                    b_bona.append(float(score))
+
+        if not b_bona or not b_spoof:
+            continue
+
+        arr_bona = np.array(b_bona, dtype=np.float64)
+        arr_spoof = np.array(b_spoof, dtype=np.float64)
+
+        eer_val, _ = compute_eer(arr_bona, arr_spoof)
+        eer_dist.append(eer_val * 100.0)
+
+        d_asv = compute_dcf(
+            arr_bona,
+            arr_spoof,
+            cost_miss=ASVSPOOF_COST_PROFILE["cost_miss"],
+            cost_fa=ASVSPOOF_COST_PROFILE["cost_fa"],
+            p_target=ASVSPOOF_COST_PROFILE["p_target"],
+            actual_threshold=0.5,
+        )
+        asv_mindcf_dist.append(d_asv["min_dcf"])
+        asv_actdcf_dist.append(d_asv["act_dcf"])
+
+        d_bank = compute_dcf(
+            arr_bona,
+            arr_spoof,
+            cost_miss=BANKING_COST_PROFILE["cost_miss"],
+            cost_fa=BANKING_COST_PROFILE["cost_fa"],
+            p_target=BANKING_COST_PROFILE["p_target"],
+            actual_threshold=0.70,
+        )
+        bank_mindcf_dist.append(d_bank["min_dcf"])
+        bank_actdcf_dist.append(d_bank["act_dcf"])
+
+        all_scores = np.concatenate([arr_bona, arr_spoof])
+        all_labels = np.concatenate([np.zeros(len(arr_bona)), np.ones(len(arr_spoof))])
+        c_val = cal.compute_cllr(all_scores, all_labels)
+        cllr_dist.append(c_val)
+
+    def _ci(arr):
+        if not arr:
+            return [0.0, 0.0]
+        return [
+            round(float(np.percentile(arr, 2.5)), 4),
+            round(float(np.percentile(arr, 97.5)), 4),
+        ]
+
+    return {
+        "n_bootstrap": len(eer_dist),
+        "n_speakers": len(unique_speakers),
+        "eer_percent_ci95": _ci(eer_dist),
+        "asvspoof_min_dcf_ci95": _ci(asv_mindcf_dist),
+        "asvspoof_act_dcf_ci95": _ci(asv_actdcf_dist),
+        "banking_min_dcf_ci95": _ci(bank_mindcf_dist),
+        "banking_act_dcf_ci95": _ci(bank_actdcf_dist),
+        "cllr_ci95": _ci(cllr_dist),
+    }
 
 
 def run_synthetic_benchmark_suite() -> Dict[str, Any]:
@@ -482,7 +589,31 @@ def load_manifest_trials(
                     parts = [p.strip() for p in line.split() if p.strip()]
                     if not parts:
                         continue
-                    if len(parts) >= 5:
+                    if len(parts) >= 9:
+                        # Official ASVspoof 5 Track 1 schema (10 columns):
+                        # SPEAKER_ID FLAC_FILE_NAME SPEAKER_GENDER CODEC CODEC_Q CODEC_SEED ATTACK_TAG ATTACK_LABEL KEY TMP
+                        spk = parts[0]
+                        file_id = parts[1]
+                        gender = parts[2]
+                        codec_raw = parts[3]
+                        codec = codec_raw if codec_raw != "-" else "clean_16k"
+                        gen_raw = parts[7]
+                        gen = gen_raw if gen_raw != "-" else "bonafide"
+                        key = parts[8].lower()
+                        label = 1 if key in ("spoof", "fake", "attack", "1") else 0
+                        trials.append({
+                            "trial_id": file_id,
+                            "speaker_id": spk,
+                            "label": label,
+                            "codec": codec,
+                            "generator": gen,
+                            "gender": gender,
+                            "language": "English",
+                            "audio_file": f"{file_id}.flac",
+                        })
+                    elif len(parts) >= 5:
+                        # ASVspoof 2019 / 2021 schema (5 columns):
+                        # SPEAKER_ID AUDIO_FILE_NAME ENVIRONMENT/CODEC ATTACK_ID KEY
                         spk = parts[0]
                         file_id = parts[1]
                         codec = parts[2] if parts[2] != "-" else "clean_16k"
@@ -529,8 +660,10 @@ def load_manifest_trials(
 def run_manifest_evaluation(
     manifest_path: Union[str, Path],
     audio_dir: Optional[Union[str, Path]] = None,
+    dev_manifest_path: Optional[Union[str, Path]] = None,
     dev_ratio: float = 0.35,
     holdout_generators: Optional[List[str]] = None,
+    n_bootstrap: int = 100,
     seed: int = 42,
 ) -> Dict[str, Any]:
     """
@@ -538,22 +671,32 @@ def run_manifest_evaluation(
     partitions trials with zero speaker and generator leakage, fits Platt
     scaling on dev, and evaluates biometric metrics on held-out test data.
     """
-    trials = load_manifest_trials(manifest_path, audio_dir=audio_dir)
-    if not trials:
-        raise ValueError(f"No valid trials found in manifest: {manifest_path}")
+    if dev_manifest_path:
+        dev_all = load_manifest_trials(dev_manifest_path, audio_dir=audio_dir)
+        eval_all = load_manifest_trials(manifest_path, audio_dir=audio_dir)
+        dev_trials = [t for t in dev_all if "score" in t]
+        eval_trials = [t for t in eval_all if "score" in t]
+        trials = dev_all + eval_all
+        scored_trials = dev_trials + eval_trials
+        if not dev_trials or not eval_trials:
+            raise ValueError("Both dev and eval manifests must contain scored trials or readable audio files.")
+    else:
+        trials = load_manifest_trials(manifest_path, audio_dir=audio_dir)
+        if not trials:
+            raise ValueError(f"No valid trials found in manifest: {manifest_path}")
 
-    scored_trials = [t for t in trials if "score" in t]
-    if not scored_trials:
-        raise ValueError("None of the trials in manifest have scores or readable audio files.")
+        scored_trials = [t for t in trials if "score" in t]
+        if not scored_trials:
+            raise ValueError("None of the trials in manifest have scores or readable audio files.")
 
-    dev_trials, eval_trials = create_disjoint_partitions(
-        scored_trials,
-        dev_ratio=dev_ratio,
-        speaker_key="speaker_id",
-        generator_key="generator",
-        holdout_generators=holdout_generators,
-        seed=seed,
-    )
+        dev_trials, eval_trials = create_disjoint_partitions(
+            scored_trials,
+            dev_ratio=dev_ratio,
+            speaker_key="speaker_id",
+            generator_key="generator",
+            holdout_generators=holdout_generators,
+            seed=seed,
+        )
 
     dev_bona = [t["score"] for t in dev_trials if t["label"] == 0]
     dev_spoof = [t["score"] for t in dev_trials if t["label"] == 1]
@@ -575,6 +718,15 @@ def run_manifest_evaluation(
         s_dev = np.concatenate([dev_bona, dev_spoof])
         y_dev = np.concatenate([np.zeros(len(dev_bona)), np.ones(len(dev_spoof))])
         calibrator.fit(s_dev, y_dev)
+
+    # Compute speaker-clustered bootstrap 95% confidence intervals
+    bootstrap_ci = compute_speaker_clustered_bootstrap_ci(
+        eval_trials,
+        calibrator=calibrator,
+        n_bootstrap=n_bootstrap,
+        seed=seed,
+    )
+    overall_report["bootstrap_ci95"] = bootstrap_ci
 
     # Breakdown by Codec
     codec_groups: Dict[str, List[Dict[str, Any]]] = {}
@@ -738,25 +890,37 @@ def format_markdown_report(benchmark_data: Dict[str, Any]) -> str:
         md.append("| Metric | Value | Reference Standard / Interpretation |")
         md.append("| :--- | :---: | :--- |")
         md.append(f"| **Equal Error Rate (EER)** | **{overall['eer_percent']}%** | Standard operating threshold @ {overall['eer_threshold']} |")
+        if "bootstrap_ci95" in overall:
+            ci = overall["bootstrap_ci95"]
+            if "eer_percent_ci95" in ci:
+                md.append(f"| **EER 95% Bootstrap CI** | **[{ci['eer_percent_ci95'][0]}%, {ci['eer_percent_ci95'][1]}%]** | Speaker-clustered resampling ({ci.get('n_speakers', 0)} speakers) |")
         md.append(f"| **ASVspoof minDCF** | {overall['asvspoof_profile']['min_dcf']} | P_target=0.05, C_miss=1.0, C_fa=1.0 |")
         md.append(f"| **Banking minDCF** | {overall['banking_profile']['min_dcf']} | P_target=0.01, C_miss=10.0, C_fa=1.0 (Theoretical lower bound) |")
         md.append(f"| **Banking actDCF** | **{overall['banking_profile']['act_dcf']}** | Operational Bayes cost with Platt calibrated scores |")
+        if "bootstrap_ci95" in overall:
+            ci = overall["bootstrap_ci95"]
+            if "banking_act_dcf_ci95" in ci:
+                md.append(f"| **Banking actDCF 95% CI** | [{ci['banking_act_dcf_ci95'][0]}, {ci['banking_act_dcf_ci95'][1]}] | 95% Confidence interval under speaker variation |")
         md.append(f"| **Calibration Loss Gap** | {overall['banking_profile']['calibration_gap']} | actDCF minus minDCF (Closer to 0 indicates optimal calibration) |")
         md.append(f"| **Expected Calibration Error (ECE)** | {overall['calibration_metrics']['ece']} | 10-bin empirical probability calibration error |")
+        cal_cllr = overall['calibration_metrics'].get('cllr')
+        if cal_cllr is not None:
+            md.append(f"| **Log-Likelihood Cost (Cllr)** | **{cal_cllr}** | Information-theoretic cost (Reference detector = 1.0) |")
         md.append("")
 
     # 1. Telephony Codecs Table
     if benchmark_data.get("codec_benchmarks"):
         md.append("## 1. Codec & Telephony Network Degradation Matrix")
-        md.append("| Telephony Channel / Codec | EER (%) | ASVspoof minDCF | Banking minDCF | Banking actDCF | ECE Calibration |")
-        md.append("| :--- | :---: | :---: | :---: | :---: | :---: |")
+        md.append("| Telephony Channel / Codec | EER (%) | ASVspoof minDCF | Banking minDCF | Banking actDCF | ECE Calibration | Cllr |")
+        md.append("| :--- | :---: | :---: | :---: | :---: | :---: | :---: |")
         for name, res in benchmark_data["codec_benchmarks"].items():
             eer = res["eer_percent"]
             asv_min = res["asvspoof_profile"]["min_dcf"]
             bank_min = res["banking_profile"]["min_dcf"]
             bank_act = res["banking_profile"]["act_dcf"]
             ece = res["calibration_metrics"]["ece"]
-            md.append(f"| **{name}** | {eer}% | {asv_min} | {bank_min} | {bank_act} | {ece} |")
+            cllr_val = res["calibration_metrics"].get("cllr", "N/A")
+            md.append(f"| **{name}** | {eer}% | {asv_min} | {bank_min} | {bank_act} | {ece} | {cllr_val} |")
         md.append("")
 
     # 2. Languages Table
@@ -775,14 +939,15 @@ def format_markdown_report(benchmark_data: Dict[str, Any]) -> str:
     # 3. Attack Types Table
     if benchmark_data.get("attack_benchmarks"):
         md.append("## 3. Generative Architecture & Attack Breakdown")
-        md.append("| Generative Attack Vector | EER (%) | Banking minDCF | Banking actDCF | Calibration Gap |")
-        md.append("| :--- | :---: | :---: | :---: | :---: |")
+        md.append("| Generative Attack Vector | EER (%) | Banking minDCF | Banking actDCF | Calibration Gap | Cllr |")
+        md.append("| :--- | :---: | :---: | :---: | :---: | :---: |")
         for attack, res in benchmark_data["attack_benchmarks"].items():
             eer = res["eer_percent"]
             bank_min = res["banking_profile"]["min_dcf"]
             bank_act = res["banking_profile"]["act_dcf"]
             gap = res["banking_profile"]["calibration_gap"]
-            md.append(f"| **{attack}** | {eer}% | {bank_min} | {bank_act} | {gap} |")
+            cllr_val = res["calibration_metrics"].get("cllr", "N/A")
+            md.append(f"| **{attack}** | {eer}% | {bank_min} | {bank_act} | {gap} | {cllr_val} |")
         md.append("")
 
     # 4. Executive Summary
@@ -797,9 +962,11 @@ def format_markdown_report(benchmark_data: Dict[str, Any]) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Dhvani Frozen Biometric Evaluation Harness")
     parser.add_argument("--manifest", type=str, default=None, help="Path to evaluation manifest (CSV/TSV/JSON/protocol) for ASVspoof 5 or In-the-Wild.")
+    parser.add_argument("--dev-manifest", type=str, default=None, help="Optional separate development manifest for calibration fit.")
     parser.add_argument("--audio-dir", type=str, default=None, help="Root directory containing audio archives referenced in manifest.")
     parser.add_argument("--holdout-generators", type=str, nargs="+", default=None, help="List of attack generators to isolate strictly to evaluation set.")
     parser.add_argument("--dev-ratio", type=float, default=0.35, help="Development set partition ratio for calibration.")
+    parser.add_argument("--n-bootstrap", type=int, default=100, help="Number of speaker-clustered bootstrap iterations.")
     parser.add_argument("--benchmark-demo", action="store_true", help="Run the full synthetic telephony and language benchmark.")
     parser.add_argument("--output-json", type=str, default=None, help="Path to write JSON benchmark results.")
     parser.add_argument("--output-md", type=str, default=None, help="Path to write Markdown executive report.")
@@ -810,9 +977,11 @@ def main():
     if args.manifest:
         report_data = run_manifest_evaluation(
             manifest_path=args.manifest,
+            dev_manifest_path=args.dev_manifest,
             audio_dir=args.audio_dir,
             dev_ratio=args.dev_ratio,
             holdout_generators=args.holdout_generators,
+            n_bootstrap=args.n_bootstrap,
         )
     else:
         report_data = run_synthetic_benchmark_suite()

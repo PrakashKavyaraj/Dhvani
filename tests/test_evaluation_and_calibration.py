@@ -29,6 +29,7 @@ from app.core.telephony_codecs import (
 from scripts.evaluation_harness import (
     compute_dcf,
     compute_eer,
+    compute_speaker_clustered_bootstrap_ci,
     create_disjoint_partitions,
     evaluate_score_set,
     evaluate_with_disjoint_calibration,
@@ -288,4 +289,54 @@ class TestBenchmarkSuiteIntegration:
         assert "## Overall Held-out Biometric Benchmark" in md
         assert "## Multi-Dimensional Leakage Audit" in md
         assert "Statistical Power & Sample Size Notice" in md
+        assert "bootstrap_ci95" in report["overall_evaluation"]
+
+    def test_cllr_and_speaker_bootstrap_ci(self, tmp_path):
+        calibrator = ProbabilityCalibrator()
+        bona_scores = [0.05, 0.10, 0.12, 0.15, 0.18]
+        spoof_scores = [0.82, 0.85, 0.90, 0.92, 0.95]
+        s = np.concatenate([bona_scores, spoof_scores])
+        y = np.concatenate([np.zeros(len(bona_scores)), np.ones(len(spoof_scores))])
+        calibrator.fit(s, y)
+
+        cllr = calibrator.compute_cllr(s, y)
+        assert 0.0 <= cllr < 1.0
+
+        eval_trials = []
+        for i in range(10):
+            eval_trials.append({
+                "speaker_id": f"spk_{i}",
+                "label": 0 if i < 5 else 1,
+                "score": 0.1 if i < 5 else 0.9,
+            })
+
+        ci = compute_speaker_clustered_bootstrap_ci(eval_trials, calibrator=calibrator, n_bootstrap=20)
+        assert "eer_percent_ci95" in ci
+        assert "cllr_ci95" in ci
+        assert ci["n_speakers"] == 10
+
+    def test_asvspoof5_10_column_manifest_parsing(self, tmp_path):
+        asv5_file = tmp_path / "ASVspoof5.sample.tsv"
+        asv5_file.write_text(
+            "D_0062 D_0000000001 F - - - AC1 A11 spoof -\n"
+            "D_0461 D_0000000190 M - - - - bonafide bonafide -\n"
+            "D_0106 D_0000000043 M C01 2 D_0000000001 AC2 A15 spoof -\n"
+        )
+        trials = load_manifest_trials(asv5_file)
+        assert len(trials) == 3
+        assert trials[0]["speaker_id"] == "D_0062"
+        assert trials[0]["trial_id"] == "D_0000000001"
+        assert trials[0]["generator"] == "A11"
+        assert trials[0]["label"] == 1
+        assert trials[0]["codec"] == "clean_16k"
+
+        assert trials[1]["speaker_id"] == "D_0461"
+        assert trials[1]["label"] == 0
+        assert trials[1]["generator"] == "bonafide"
+
+        assert trials[2]["speaker_id"] == "D_0106"
+        assert trials[2]["label"] == 1
+        assert trials[2]["codec"] == "C01"
+        assert trials[2]["generator"] == "A15"
+
 

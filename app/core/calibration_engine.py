@@ -214,10 +214,42 @@ class ProbabilityCalibrator:
                 weight = len(idx) / total_samples
                 ece += weight * abs(bin_acc - bin_conf)
 
+        cllr = self.compute_cllr(s, y)
+
         return {
             "brier": round(brier_score, 4),
             "ece": round(float(ece), 4),
+            "cllr": cllr,
         }
+
+    def compute_cllr(
+        self,
+        raw_scores: Union[np.ndarray, List[float]],
+        labels: Union[np.ndarray, List[int]],
+    ) -> float:
+        """
+        Computes Log-Likelihood Ratio Cost (Cllr) as defined by Brummer & du Preez (2006).
+        Cllr measures the discrimination and calibration of likelihood ratios across all priors.
+        A non-informative reference detector achieves Cllr = 1.0. Lower is better.
+        """
+        s = np.asarray(raw_scores, dtype=np.float64)
+        y = np.asarray(labels, dtype=np.int64)
+
+        p = np.clip(self.calibrate(s), 1e-12, 1.0 - 1e-12)
+        prior_odds = self.prior_spoof / (1.0 - self.prior_spoof)
+        llrs = np.log(p / (1.0 - p)) - np.log(prior_odds)
+
+        bona_idx = np.where(y == 0)[0]
+        spoof_idx = np.where(y == 1)[0]
+
+        if len(bona_idx) == 0 or len(spoof_idx) == 0:
+            return 1.0
+
+        bona_penalties = np.log1p(np.exp(np.clip(llrs[bona_idx], -100.0, 100.0)))
+        spoof_penalties = np.log1p(np.exp(np.clip(-llrs[spoof_idx], -100.0, 100.0)))
+
+        cllr = (np.mean(bona_penalties) + np.mean(spoof_penalties)) / (2.0 * np.log(2.0))
+        return round(float(cllr), 4)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
