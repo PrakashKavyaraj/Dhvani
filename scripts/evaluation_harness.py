@@ -175,14 +175,28 @@ def evaluate_score_set(
 
     eer, eer_th = compute_eer(bona, spoof)
 
-    # ASVspoof 5 Profile: P_target=0.05, C_miss=1.0, C_fa=1.0
+    cal_engine = calibrator or calibration_engine
+
+    th_asv_bayes = cal_engine.compute_bayes_threshold(
+        cost_miss=ASVSPOOF_COST_PROFILE["cost_miss"],
+        cost_fa=ASVSPOOF_COST_PROFILE["cost_fa"],
+        p_target=ASVSPOOF_COST_PROFILE["p_target"],
+    )
+
+    th_bank_bayes = cal_engine.compute_bayes_threshold(
+        cost_miss=BANKING_COST_PROFILE["cost_miss"],
+        cost_fa=BANKING_COST_PROFILE["cost_fa"],
+        p_target=BANKING_COST_PROFILE["p_target"],
+    )
+
+    # ASVspoof 5 Profile: P_target=0.05, C_miss=10.0, C_fa=1.0
     dcf_asv = compute_dcf(
         bona,
         spoof,
         cost_miss=ASVSPOOF_COST_PROFILE["cost_miss"],
         cost_fa=ASVSPOOF_COST_PROFILE["cost_fa"],
         p_target=ASVSPOOF_COST_PROFILE["p_target"],
-        actual_threshold=0.5,
+        actual_threshold=th_asv_bayes,
     )
 
     # Real-World Banking Profile: P_target=0.01, C_miss=10.0, C_fa=1.0
@@ -192,7 +206,7 @@ def evaluate_score_set(
         cost_miss=BANKING_COST_PROFILE["cost_miss"],
         cost_fa=BANKING_COST_PROFILE["cost_fa"],
         p_target=BANKING_COST_PROFILE["p_target"],
-        actual_threshold=0.70,
+        actual_threshold=th_bank_bayes,
     )
 
     # Calibration verification
@@ -348,6 +362,17 @@ def compute_speaker_clustered_bootstrap_ci(
     bank_actdcf_dist: List[float] = []
     cllr_dist: List[float] = []
 
+    th_asv_bayes = cal.compute_bayes_threshold(
+        cost_miss=ASVSPOOF_COST_PROFILE["cost_miss"],
+        cost_fa=ASVSPOOF_COST_PROFILE["cost_fa"],
+        p_target=ASVSPOOF_COST_PROFILE["p_target"],
+    )
+    th_bank_bayes = cal.compute_bayes_threshold(
+        cost_miss=BANKING_COST_PROFILE["cost_miss"],
+        cost_fa=BANKING_COST_PROFILE["cost_fa"],
+        p_target=BANKING_COST_PROFILE["p_target"],
+    )
+
     for _ in range(n_bootstrap):
         sampled_spks = rng.choice(unique_speakers, size=len(unique_speakers), replace=True)
         b_bona: List[float] = []
@@ -378,7 +403,7 @@ def compute_speaker_clustered_bootstrap_ci(
             cost_miss=ASVSPOOF_COST_PROFILE["cost_miss"],
             cost_fa=ASVSPOOF_COST_PROFILE["cost_fa"],
             p_target=ASVSPOOF_COST_PROFILE["p_target"],
-            actual_threshold=0.5,
+            actual_threshold=th_asv_bayes,
         )
         asv_mindcf_dist.append(d_asv["min_dcf"])
         asv_actdcf_dist.append(d_asv["act_dcf"])
@@ -389,7 +414,7 @@ def compute_speaker_clustered_bootstrap_ci(
             cost_miss=BANKING_COST_PROFILE["cost_miss"],
             cost_fa=BANKING_COST_PROFILE["cost_fa"],
             p_target=BANKING_COST_PROFILE["p_target"],
-            actual_threshold=0.70,
+            actual_threshold=th_bank_bayes,
         )
         bank_mindcf_dist.append(d_bank["min_dcf"])
         bank_actdcf_dist.append(d_bank["act_dcf"])

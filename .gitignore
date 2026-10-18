@@ -21,6 +21,9 @@ data/*.db
 data/*.sqlite3
 data/alerts_outbox.json
 data/analysis_records.json
+data/asvspoof5_official/*.tsv
+data/asvspoof5_official/*.tar.gz
+data/asvspoof5_official/*.csv
 *.db
 *.sqlite3
 

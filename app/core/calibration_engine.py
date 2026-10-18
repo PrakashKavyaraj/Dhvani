@@ -21,9 +21,12 @@ from scipy import optimize
 
 logger = logging.getLogger("voice_integrity.calibration_engine")
 
-# Standard ASVspoof 5 evaluation cost profile
+# Official ASVspoof 5 Track 1 Evaluation Cost Profile (Spoof-Positive Convention):
+# In official challenge plans (bonafide-target), C_miss=1, C_fa=10, P_spoof=0.05.
+# Under Dhvani's spoof-positive convention (spoof is target, missed spoof is miss):
+# C_miss=10.0 (cost of accepting a spoof), C_fa=1.0 (cost of rejecting bonafide), P_target=0.05.
 ASVSPOOF_COST_PROFILE = {
-    "cost_miss": 1.0,
+    "cost_miss": 10.0,
     "cost_fa": 1.0,
     "p_target": 0.05,
 }

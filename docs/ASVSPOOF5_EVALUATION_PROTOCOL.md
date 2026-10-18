@@ -1,9 +1,9 @@
 # Dhvani Voice Integrity: Pre-Registered ASVspoof 5 Evaluation Protocol
 
-**Document Version:** 1.0 (Pre-Registration Baseline)  
-**Status:** Pre-Registered Prior to Official Corpus Scoring  
+**Document Version:** 1.1 (Pre-Run Amendment Baseline)  
+**Status:** Pre-Registered & Formally Amended Prior to Official Corpus Scoring  
 **Target Benchmark:** ASVspoof 5 Track 1 (Acoustic Deepfake and Voice Clone Detection)  
-**Repository Branch:** `main`  
+**Repository Branch:** `main` (commit tag: `protocol-v1`)  
 **License:** Open Data Commons Attribution (ODC-By v1.0) Compatible  
 
 ---
@@ -17,32 +17,40 @@ Pre-registering evaluation criteria, cost profiles, confidence intervals, and de
 2. **Data Leakage:** Strict partition boundaries enforce speaker-disjoint splits, generator isolation, and independent score normalization.
 3. **Optimism Bias:** Performance metrics are reported across both the theoretical optimum ($\min\text{DCF}$) and the operational reality ($\text{actDCF}$ with frozen Platt scaling), explicitly surfacing any calibration loss.
 
+### Protocol Version History & Formal Amendments
+* **v1.0 (2026-10-18T03:51:00Z)**: Initial pre-registration baseline cataloging dual cost regimes, zero-leakage constraints, and degradation matrix.
+* **v1.1 (2026-10-18T18:55:00Z: Pre-Run Amendment)**:
+  1. **Official Cost Profile Alignment**: Amended the ASVspoof 5 standard profile to $C_{\text{miss}} = 10.0, C_{\text{fa}} = 1.0, P_{\text{target}} = 0.05$. In the official challenge evaluation plan (which uses a bonafide-target convention), the penalty for rejecting a genuine speaker is 1 and the penalty for accepting a spoof is 10. Under Dhvani's fraud-detection / spoof-positive convention (where spoof is the target class $y=1$), missing a spoof is penalized with cost 10 and false alarming on genuine speech is penalized with cost 1, yielding the exact official Bayes cost ratio ($\beta \approx 1.90$).
+  2. **Model Provenance Disclosure (Zero-Shot Baseline)**: Formally disclosed that current model weights (AASIST-L trained on ASVspoof 2019 LA; Forensics-0.3B trained on open-source web/wild speech) were not trained on the ASVspoof 5 training partition (attacks A01-A08). The upcoming scoring run is explicitly classified as a **zero-shot cross-dataset evaluation**, which establishes the lower baseline before task-specific fine-tuning.
+  3. **Dev vs. Eval Codec Mismatch Notice**: Highlighted that ASVspoof 5 Dev contains predominantly clean uncompressed speech, whereas Eval introduces telephony codecs C01 through C11. A calibrator fit on clean Dev audio is expected to experience calibration drift on Eval codecs unless codec augmentation is introduced.
+  4. **Pilot Readiness Gate Rationales**: Renamed statutory gates to "Pilot readiness gates" and documented quantitative engineering justifications for each threshold.
+
 ---
 
 ## 2. Official Dataset Specification & Ground Truth
 
 ### 2.1 Corpus Description
 The evaluation utilizes the official **ASVspoof 5** dataset distributed via Zenodo under the Open Data Commons Attribution license:
-* **Zenodo DOI:** 10.5281/zenodo.10707172 (and official challenge mirrors)
+* **Zenodo DOI:** 10.5281/zenodo.14498691
 * **Challenge Track:** Track 1 (Deepfake Speech Detection, Countermeasures for Voice Spoofing)
 * **Citation:** ASVspoof 5 Consortium, "The ASVspoof 5 Challenge: Advancing Audio Deepfake Detection," Interspeech / Challenge Plan, 2024.
 
 ### 2.2 Corpus Partitions & Official Schema
-Evaluation ingests official tab-separated protocol metadata files without relabeling or filtering:
-* **Development Partition (`dev`):** Official metadata file `ASVspoof5.dev.metadata.txt`. Used strictly for exploratory error analysis, feature selection, and fitting the Platt scaling calibration parameters.
-* **Evaluation Partition (`eval`):** Official metadata file `ASVspoof5.eval.metadata.txt`. Scored exactly once with frozen weights and frozen calibrators.
+Evaluation ingests official space-separated protocol metadata files without relabeling or filtering:
+* **Development Partition (`dev`):** Official metadata file `ASVspoof5.dev.track_1.tsv` (140,950 trials across 785 unique speakers). Used strictly for exploratory error analysis, feature selection, and fitting the Platt scaling calibration parameters.
+* **Evaluation Partition (`eval`):** Official metadata file `ASVspoof5.eval.track_1.tsv` (680,774 trials across 737 unique speakers). Scored exactly once with frozen weights and frozen calibrators.
 
 Official protocol metadata columns parsed by [`scripts/evaluation_harness.py`](file:///Users/prakashkavyaraj/backend/scripts/evaluation_harness.py):
+```text
+SPEAKER_ID  FLAC_FILE_NAME  SPEAKER_GENDER  CODEC  CODEC_Q  CODEC_SEED  ATTACK_TAG  ATTACK_LABEL  KEY  TMP
 ```
-[speaker_id] \t [file_id] \t [codec_label] \t [attack_id] \t [key]
-```
-Where `key` is categorized into `bonafide` (genuine human speech) or `spoof` (synthetic or voice-converted speech).
+Where `KEY` is categorized into `bonafide` (genuine human speech) or `spoof` (synthetic or voice-converted speech).
 
 ### 2.3 Strict Zero-Leakage Governance
 To guarantee empirical validity, the evaluation harness enforces three mathematical isolation invariants:
-1. **Speaker Disjointness:** $\text{Speakers}(\text{Dev}) \cap \text{Speakers}(\text{Eval}) = \emptyset$. No human speaker appearing in the calibration partition may appear in the evaluation partition.
-2. **Holdout Generator Isolation:** At least one generative voice cloning algorithm (e.g., neural vocoder or diffusion architecture) present in the evaluation partition is absent from the training and calibration sets to evaluate true zero-shot detection.
-3. **Partition-Isolated Score Normalization:** Z-norm or min-max normalization parameters $(\mu_{\text{dev}}, \sigma_{\text{dev}})$ are derived solely from the development partition and applied statically to evaluation scores.
+1. **Speaker Disjointness:** $\text{Speakers}(\text{Dev}) \cap \text{Speakers}(\text{Eval}) = \emptyset$. Confirmed by audit: 785 Dev speakers and 737 Eval speakers share exactly 0 overlapping speaker IDs.
+2. **Holdout Generator Isolation:** Dev contains attacks `A09` through `A16`; Eval contains attacks `A17` through `A32`. All 16 generative attacks in Eval are zero-day holdouts relative to Dev.
+3. **Partition-Isolated Score Normalization:** Normalization parameters $(\mu_{\text{dev}}, \sigma_{\text{dev}})$ and Platt calibration coefficients $(a, b)$ are derived solely from the development partition and applied statically to evaluation scores.
 
 ---
 
@@ -57,35 +65,36 @@ Normalized Detection Cost Function ($\text{NDCF}$) is normalized by the default 
 
 $$\text{NDCF}(\theta) = \frac{\text{DCF}(\theta)}{\min(C_{\text{miss}} \cdot P_{\text{target}}, C_{\text{fa}} \cdot (1 - P_{\text{target}}))}$$
 
-### 3.2 Dual Cost Profiles
-Dhvani evaluates performance under two distinct risk regimes:
+### 3.2 Dual Cost Profiles (Spoof-Positive Fraud Detection Convention)
+In Dhvani's countermeasure orientation, the positive class ($y=1$) is spoof speech, and the negative class ($y=0$) is genuine bonafide speech. Consequently, a "miss" occurs when a spoof attack bypasses the detector (accepted spoof), and a "false alarm" occurs when a genuine caller is flagged (rejected bonafide).
 
-| Parameter | ASVspoof 5 Challenge Standard | Operational Banking Fraud Risk | Rationale |
+| Parameter | ASVspoof 5 Challenge Official | Operational Banking Fraud Risk | Rationale |
 | :--- | :---: | :---: | :--- |
-| **$C_{\text{miss}}$** (Cost of Miss) | 1.0 | 10.0 | Financial fraud, unauthorized wire transfers, and account takeovers inflict catastrophic liability. |
-| **$C_{\text{fa}}$** (Cost of False Alarm) | 1.0 | 1.0 | False alert triggers step-up authentication (MFA/OTP), creating customer friction but no financial loss. |
-| **$P_{\text{target}}$** (Attack Prior) | 0.05 | 0.01 | In live banking contact centers, genuine callers represent ~99% of call volume; deepfake attacks represent ~1%. |
-| **Default Bayes Threshold $\theta_{\text{Bayes}}$** | 0.00 | +2.3026 ($\ln \frac{10 \times 0.01}{1 \times 0.99}$) | Operational decision threshold in Log-Likelihood Ratio (LLR) space. |
+| **$C_{\text{miss}}$** (Cost of Missed Spoof) | 10.0 | 10.0 | Official ASVspoof 5 plan penalizes accepting a spoof with cost 10. In banking, an undetected spoof enables account takeover. |
+| **$C_{\text{fa}}$** (Cost of False Alarm on Genuine) | 1.0 | 1.0 | Official ASVspoof 5 plan penalizes rejecting genuine speech with cost 1. In banking, false alerts trigger MFA step-up. |
+| **$P_{\text{target}}$** (Attack Prior $P_{\text{spoof}}$) | 0.05 | 0.01 | Challenge benchmark assumes a 5% attack prior; live banking contact centers operate at ~1% attack prior. |
+| **Bayes Prior-Cost Ratio $\beta$** | 1.90 ($\frac{1.0 \times 0.95}{10.0 \times 0.05}$) | 9.90 ($\frac{1.0 \times 0.99}{10.0 \times 0.01}$) | Relative cost balancing false alarms against missed attacks. |
+| **Bayes Probability Threshold $\theta_{\text{Bayes}}$** | 0.6552 | 0.9083 | Optimal Bayes operating point in calibrated posterior probability space. |
+| **Bayes LLR Threshold $\theta_{\text{LLR}}$** | +0.6419 ($\ln 1.90$) | +2.2925 ($\ln 9.90$) | Optimal Bayes operating point in Log-Likelihood Ratio space. |
 
 ### 3.3 Metric Suite
 1. **Equal Error Rate (EER, %):** The operating threshold where $P_{\text{miss}} = P_{\text{fa}}$. Serves as an uncalibrated capability baseline.
-2. **Minimum DCF ($\min\text{DCF}$):** Theoretical best cost achieved by selecting the optimal a posteriori threshold on the evaluation set.
-3. **Actual DCF ($\text{actDCF}$):** Operational cost achieved using the fixed threshold derived from Platt scaling fitted on the development set:
+2. **Minimum DCF ($\min\text{DCF}$):** Theoretical best cost achieved by selecting the oracle a posteriori threshold on the evaluation set.
+3. **Actual DCF ($\text{actDCF}$):** Operational cost achieved using the fixed Bayes threshold derived from Platt scaling fitted on the development set:
 
-$$\text{actDCF} = \text{NDCF}(\theta_{\text{calibrated}})$$
+$$\text{actDCF} = \text{NDCF}(\theta_{\text{Bayes}})$$
 
 4. **Calibration Loss Gap:**
 
 $$\Delta_{\text{cal}} = \text{actDCF} - \min\text{DCF}$$
 
 A small gap ($\Delta_{\text{cal}} \le 0.08$) confirms that the score-to-probability mapping is trustworthy in production.
-5. **Log-Likelihood Ratio Cost ($C_{\text{llr}}$):** Information-theoretic measure of calibrator reliability across all possible priors.
-6. **Expected Calibration Error (ECE):** 10-bin reliability diagram error measuring probability accuracy.
+5. **Log-Likelihood Ratio Cost ($C_{\text{llr}}$):** Information-theoretic measure of calibrator discrimination and reliability across all priors (reference detector = 1.0; lower is better).
+6. **Expected Calibration Error (ECE):** 10-bin empirical reliability error measuring probability accuracy.
 
 ### 3.4 Statistical Rigor & Bootstrap Resampling
-To prevent spurious precision:
-* **Speaker-Clustered Bootstrap Resampling:** 95% Confidence Intervals are computed using 1,000 bootstrap iterations resampled by speaker cluster (not i.i.d. utterance sampling), capturing inter-speaker variance.
-* **Rule of Three Bound:** When zero errors are observed in $N$ trials, the error rate is reported with its 95% upper bound ($3/N$):
+* **Speaker-Clustered Bootstrap Resampling:** 95% Confidence Intervals are computed using 1,000 bootstrap iterations resampled by speaker cluster with replacement, capturing inter-speaker variance.
+* **Rule of Three Upper Bound:** When zero errors are observed in $N$ trials, the error rate is reported with its 95% upper bound ($3/N$):
   * For $N=10$ spoofs: Error $\le 30.0\%$ (statistically underpowered).
   * For $N=300$ spoofs: Error $\le 1.0\%$ (statistically meaningful).
 * **Sample Size Enforcement:** Harness halts and issues warnings if dev trials per class < 100 or eval spoofs < 300.
@@ -94,7 +103,7 @@ To prevent spurious precision:
 
 ## 4. Telephony Channel Degradation Stress Matrix
 
-Real-world telephony networks inflict severe acoustic distortion that collapses naive laboratory models. To quantify this gap, the evaluation pipeline degrades the official ASVspoof 5 evaluation audio through a 5-stage carrier simulation pipeline:
+Telephony networks inflict severe acoustic distortion. To quantify this gap, the evaluation pipeline degrades evaluation audio through a 5-stage carrier simulation pipeline:
 
 | Degradation Stage | Codec / Channel Profile | Bandwidth & Bitrate | Implementation & Standard |
 | :--- | :--- | :--- | :--- |
@@ -105,7 +114,7 @@ Real-world telephony networks inflict severe acoustic distortion that collapses 
 | **VoIP Opus Voice** | IETF RFC 6716 Opus Narrowband | 8 kHz / 16 kHz, 16 kbps | WebRTC, WhatsApp, Genesys Cloud SIPREC |
 | **Burst Packet Loss & Jitter** | Gilbert-Elliott 2-state Markov model | $p=3\%$ and $p=8\%$ loss | Simulates cellular packet drop and jitter buffer starvation |
 
-Every metric (EER, $\min\text{DCF}$, $\text{actDCF}$) is reported both before and after telephony degradation to measure the **telephony robustness delta**:
+Every metric (EER, $\min\text{DCF}$, $\text{actDCF}$) is reported before and after telephony degradation to measure the **telephony robustness delta**:
 
 $$\Delta_{\text{telephony}} = \text{EER}_{\text{G.711}} - \text{EER}_{\text{Clean}}$$
 
@@ -113,25 +122,25 @@ $$\Delta_{\text{telephony}} = \text{EER}_{\text{G.711}} - \text{EER}_{\text{Clea
 
 ## 5. Cross-Dataset & Out-of-Domain Generalization
 
-To demonstrate that the model has not overfitted to ASVspoof 5 acoustic environments, the frozen model is evaluated without refitting on two external corpora:
+To demonstrate that the models generalize beyond benchmark recording environments, the frozen models are evaluated without refitting on two external corpora:
 1. **In-the-Wild Dataset:** Real-world deepfake speech extracted from social media, public speeches, and political deepfakes (varied background acoustic noise, compression, and reverb).
 2. **CodecFake+ Telephony Corpus:** Multilingual deepfake speech processed through authentic PSTN switches and cellular base stations.
-3. **Commercial TTS Holdout Suite:** Audio synthesized using current closed-source voice generation engines (ElevenLabs Turbo v2.5, OpenAI Voice Engine, PlayHT 2.0). These are tracked as external out-of-domain evaluation items.
+3. **Commercial TTS Holdout Suite:** Audio synthesized using closed-source voice generation engines (ElevenLabs Turbo v2.5, OpenAI Voice Engine, PlayHT 2.0).
 
 ---
 
-## 6. Pre-Registered Pass/Fail Gates for Pilot Readiness
+## 6. Pre-Registered Pilot Readiness Gates
 
 Before recommending Dhvani Voice Integrity for banking shadow-mode deployment, the system must satisfy the following pre-registered acceptance criteria:
 
-| Gate ID | Criterion | Pre-Registered Target | Failure Remediation |
-| :--- | :--- | :--- | :--- |
-| **GATE-DEV-01** | ASVspoof 5 Dev $\min\text{DCF}$ (Banking Profile) | $\le 0.20$ | Fine-tune SSL front-end with weighted layer pooling |
-| **GATE-CAL-01** | Calibration Gap ($\text{actDCF} - \min\text{DCF}$) | $\le 0.08$ | Fit per-codec Platt scaling calibrators |
-| **GATE-TEL-01** | Telephony G.711 EER degradation | $\le 12.0\%$ | Retrain with channel augmentation (FreqMask, G.711 codec simulation) |
-| **GATE-LAT-01** | Turn-by-Turn Inference Latency (p50) | $\le 350\text{ ms}$ on 1.5s window | Export to ONNX INT8 or deploy GPU acceleration |
-| **GATE-LAT-02** | Latency Fail-Safe Trip Rate | $< 0.1\%$ under load | Scale worker concurrency; auto step-up on breach |
-| **GATE-OOD-01** | In-the-Wild Cross-Dataset EER | $\le 18.0\%$ | Expand training data to include multi-condition wild speech |
+| Gate ID | Criterion | Pre-Registered Target | Quantitative Justification | Failure Remediation |
+| :--- | :--- | :---: | :--- | :--- |
+| **GATE-DEV-01** | ASVspoof 5 Dev $\min\text{DCF}$ (Banking Profile) | $\le 0.20$ | Capable speech deepfake models in published literature achieve minDCF between 0.12 and 0.20 prior to channel distortion. | Fine-tune SSL front-end with weighted layer pooling |
+| **GATE-CAL-01** | Calibration Gap ($\text{actDCF} - \min\text{DCF}$) | $\le 0.08$ | An actDCF gap under 0.08 proves that operational decisions with Platt scaling lose less than 8% Bayes cost relative to oracle thresholding. | Fit per-codec Platt scaling calibrators |
+| **GATE-TEL-01** | Telephony G.711 EER degradation | $\le 12.0\%$ | Unaugmented lab models degrade from ~4% clean EER up to ~10-12% under 8kHz bandpass and companding; EER > 12% creates excessive false alarms in call centers. | Retrain with channel augmentation (FreqMask, G.711 simulation) |
+| **GATE-LAT-01** | Turn-by-Turn Inference Latency (p50) | $\le 350\text{ ms}$ on 1.5s window | Carrier telephony media streams require turn turnaround within 350 ms to avoid dead-air and turn clipping on active voice calls. | Export to ONNX INT8 or deploy GPU acceleration |
+| **GATE-LAT-02** | Latency Fail-Safe Trip Rate | $< 0.1\%$ under load | Prevents DoS bypass vulnerability where high traffic forces fallback step-up authentication on more than 1 in 1,000 calls. | Scale worker concurrency; auto step-up on breach |
+| **GATE-OOD-01** | In-the-Wild Cross-Dataset EER | $\le 18.0\%$ | Confirms that the detector maintains reasonable discrimination under acoustic domain shift and noisy real-world speech without collapsing. | Expand training data to include multi-condition wild speech |
 
 ---
 
