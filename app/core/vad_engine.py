@@ -9,6 +9,7 @@ Features:
 """
 
 import logging
+import threading
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -70,6 +71,7 @@ class VADEngine:
         self.device = torch.device(device)
         self.model_path = Path(model_path) if model_path else DEFAULT_SILERO_JIT_PATH
         self._silero_model: Optional[Any] = None
+        self._lock = threading.Lock()
         self._load_silero()
 
     def _load_silero(self) -> None:
@@ -156,7 +158,12 @@ class VADEngine:
 
         tensor_wav = torch.from_numpy(wav).to(self.device).float()
 
-        with torch.inference_mode():
+        with self._lock, torch.inference_mode():
+            if hasattr(self._silero_model, "reset_states"):
+                try:
+                    self._silero_model.reset_states()
+                except Exception:
+                    pass
             for i in range(num_chunks):
                 start = i * self.CHUNK_SIZE
                 end = start + self.CHUNK_SIZE
