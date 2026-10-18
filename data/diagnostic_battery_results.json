@@ -1,0 +1,422 @@
+{
+  "timestamp": "2026-10-18T14:59:20Z",
+  "dataset_slice": "ASVspoof 5 Dev Slice 1 (300 Trials)",
+  "c1_label_shuffle": {
+    "test": "C1_label_shuffle",
+    "n_permutations": 1000,
+    "mean_eer_pct": 49.96,
+    "std_eer_pct": 3.39,
+    "ci_95_pct": [
+      43.28,
+      56.84
+    ],
+    "min_eer_pct": 39.99,
+    "max_eer_pct": 61.01,
+    "pass_criterion": "Mean EER in [45.0%, 55.0%], 95% CI in [35.0%, 65.0%]",
+    "status": "PASS"
+  },
+  "c2_trivial_features": {
+    "test": "C2_trivial_features",
+    "features_tested": [
+      "duration_seconds",
+      "rms",
+      "peak",
+      "leading_silence_seconds",
+      "trailing_silence_seconds",
+      "file_size_bytes",
+      "zero_crossing_rate"
+    ],
+    "oof_roc_auc": 0.5866,
+    "oof_eer_pct": 43.06,
+    "oof_eer_threshold": 0.7762,
+    "feature_coefficients": {
+      "duration_seconds": -0.7843,
+      "rms": 0.0583,
+      "peak": 0.1374,
+      "leading_silence_seconds": -0.0792,
+      "trailing_silence_seconds": -0.0987,
+      "file_size_bytes": 0.835,
+      "zero_crossing_rate": -0.318
+    },
+    "pass_criterion": "Out-of-fold AUC <= 0.60 (Shortcut flagged if AUC > 0.70)",
+    "status": "PASS"
+  },
+  "c3_per_component": {
+    "test": "C3_per_component",
+    "components": {
+      "forensics_raw_center": {
+        "name": "Forensics-0.3B (Center Chunk)",
+        "eer_pct": 0.0,
+        "roc_auc": 1.0,
+        "bonafide": {
+          "mean": 0.0742,
+          "std": 0.0073,
+          "min": 0.0602,
+          "max": 0.1007
+        },
+        "spoof": {
+          "mean": 0.8635,
+          "std": 0.0388,
+          "min": 0.2883,
+          "max": 0.8823
+        }
+      },
+      "forensics_window_median": {
+        "name": "Forensics-0.3B (Window Median)",
+        "eer_pct": 0.0,
+        "roc_auc": 1.0,
+        "bonafide": {
+          "mean": 0.0739,
+          "std": 0.0068,
+          "min": 0.0602,
+          "max": 0.094
+        },
+        "spoof": {
+          "mean": 0.8633,
+          "std": 0.0392,
+          "min": 0.2883,
+          "max": 0.8827
+        }
+      },
+      "aasist_raw_current": {
+        "name": "AASIST-L (Current Window)",
+        "eer_pct": 37.5,
+        "roc_auc": 0.7053,
+        "bonafide": {
+          "mean": 0.5096,
+          "std": 0.4419,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "spoof": {
+          "mean": 0.7019,
+          "std": 0.4151,
+          "min": 0.0,
+          "max": 1.0
+        }
+      },
+      "aasist_raw_persistent": {
+        "name": "AASIST-L (Persistent Evidence)",
+        "eer_pct": 32.46,
+        "roc_auc": 0.7061,
+        "bonafide": {
+          "mean": 0.7559,
+          "std": 0.3268,
+          "min": 0.001,
+          "max": 1.0
+        },
+        "spoof": {
+          "mean": 0.8622,
+          "std": 0.2904,
+          "min": 0.0003,
+          "max": 1.0
+        }
+      },
+      "aasist_window_p90": {
+        "name": "AASIST-L (90th Percentile Window)",
+        "eer_pct": 31.94,
+        "roc_auc": 0.7147,
+        "bonafide": {
+          "mean": 0.7422,
+          "std": 0.3246,
+          "min": 0.0009,
+          "max": 1.0
+        },
+        "spoof": {
+          "mean": 0.8561,
+          "std": 0.2914,
+          "min": 0.0003,
+          "max": 1.0
+        }
+      },
+      "ecapa_similarity": {
+        "name": "ECAPA-TDNN Speaker Similarity",
+        "eer_pct": 40.28,
+        "roc_auc": 0.6022,
+        "bonafide": {
+          "mean": 0.5105,
+          "std": 0.0267,
+          "min": 0.449,
+          "max": 0.5665
+        },
+        "spoof": {
+          "mean": 0.5007,
+          "std": 0.028,
+          "min": 0.4328,
+          "max": 0.5763
+        }
+      },
+      "vad_speech_ratio": {
+        "name": "Silero VAD Speech Ratio",
+        "eer_pct": 41.67,
+        "roc_auc": 0.6333,
+        "bonafide": {
+          "mean": 0.8482,
+          "std": 0.0883,
+          "min": 0.6212,
+          "max": 0.9868
+        },
+        "spoof": {
+          "mean": 0.8759,
+          "std": 0.1317,
+          "min": 0.0127,
+          "max": 1.0
+        }
+      },
+      "channel_snr_db": {
+        "name": "Channel Analyzer SNR (dB)",
+        "eer_pct": 50.0,
+        "roc_auc": 0.5,
+        "bonafide": {
+          "mean": 30.0,
+          "std": 0.0,
+          "min": 30.0,
+          "max": 30.0
+        },
+        "spoof": {
+          "mean": 30.0,
+          "std": 0.0,
+          "min": 30.0,
+          "max": 30.0
+        }
+      },
+      "pad_probability": {
+        "name": "PAD Presentation Attack Prob",
+        "eer_pct": 45.54,
+        "roc_auc": 0.5733,
+        "bonafide": {
+          "mean": 0.7579,
+          "std": 0.155,
+          "min": 0.3,
+          "max": 0.99
+        },
+        "spoof": {
+          "mean": 0.7998,
+          "std": 0.1341,
+          "min": 0.3,
+          "max": 0.99
+        }
+      },
+      "passive_liveness_score": {
+        "name": "Passive Liveness Score",
+        "eer_pct": 44.84,
+        "roc_auc": 0.5874,
+        "bonafide": {
+          "mean": 40.2778,
+          "std": 11.3923,
+          "min": 25.0,
+          "max": 70.0
+        },
+        "spoof": {
+          "mean": 36.8421,
+          "std": 10.0931,
+          "min": 25.0,
+          "max": 100.0
+        }
+      },
+      "final_fused_score": {
+        "name": "Final Fused Score",
+        "eer_pct": 0.0,
+        "roc_auc": 1.0,
+        "bonafide": {
+          "mean": 0.0665,
+          "std": 0.0027,
+          "min": 0.0614,
+          "max": 0.0747
+        },
+        "spoof": {
+          "mean": 0.9031,
+          "std": 0.0462,
+          "min": 0.2121,
+          "max": 0.9147
+        }
+      }
+    },
+    "separating_component": "forensics_window_median (Forensics-0.3B WavLM)",
+    "pass_criterion": "Report per-component EER and identify primary separator",
+    "status": "PASS"
+  },
+  "c4_filename_shuffle": {
+    "test": "C4_filename_shuffle",
+    "n_trials_tested": 50,
+    "max_score_difference": 0.0,
+    "mean_score_difference": 0.0,
+    "pass_criterion": "Max difference < 1e-6",
+    "status": "PASS"
+  },
+  "c5_preprocessing_parity": {
+    "test": "C5_preprocessing_parity",
+    "metrics": {
+      "duration_seconds": {
+        "bonafide_mean": 7.119,
+        "bonafide_std": 1.8387,
+        "spoof_mean": 7.0227,
+        "spoof_std": 1.9652,
+        "ks_statistic": 0.1148,
+        "ks_pvalue": 0.431919,
+        "ttest_pvalue": 0.714265
+      },
+      "rms": {
+        "bonafide_mean": 0.1109,
+        "bonafide_std": 0.0381,
+        "spoof_mean": 0.1218,
+        "spoof_std": 0.038,
+        "ks_statistic": 0.2018,
+        "ks_pvalue": 0.019773,
+        "ttest_pvalue": 0.035753
+      },
+      "peak": {
+        "bonafide_mean": 0.9054,
+        "bonafide_std": 0.1255,
+        "spoof_mean": 0.9286,
+        "spoof_std": 0.1069,
+        "ks_statistic": 0.1433,
+        "ks_pvalue": 0.190579,
+        "ttest_pvalue": 0.125396
+      },
+      "leading_silence_seconds": {
+        "bonafide_mean": 0.0821,
+        "bonafide_std": 0.1349,
+        "spoof_mean": 0.0548,
+        "spoof_std": 0.1402,
+        "ks_statistic": 0.1462,
+        "ks_pvalue": 0.173337,
+        "ttest_pvalue": 0.148842
+      },
+      "trailing_silence_seconds": {
+        "bonafide_mean": 0.1064,
+        "bonafide_std": 0.2289,
+        "spoof_mean": 0.0809,
+        "spoof_std": 0.148,
+        "ks_statistic": 0.1001,
+        "ks_pvalue": 0.603635,
+        "ttest_pvalue": 0.271752
+      }
+    },
+    "identical_code_path": true,
+    "pass_criterion": "Verify identical processing steps across classes and document distribution metrics",
+    "status": "PASS"
+  },
+  "c6_degenerate_inputs": {
+    "test": "C6_degenerate_inputs",
+    "inputs": {
+      "silence": {
+        "forensics_window_median": 0.8406,
+        "aasist_raw_persistent": 0.4959,
+        "final_fused_score": 0.892,
+        "final_llr": 2.1117
+      },
+      "white_noise_amp_0.001": {
+        "forensics_window_median": 0.7493,
+        "aasist_raw_persistent": 0.2765,
+        "final_fused_score": 0.8243,
+        "final_llr": 1.5457
+      },
+      "white_noise_amp_0.01": {
+        "forensics_window_median": 0.7493,
+        "aasist_raw_persistent": 0.5962,
+        "final_fused_score": 0.8243,
+        "final_llr": 1.5457
+      },
+      "white_noise_amp_0.1": {
+        "forensics_window_median": 0.7493,
+        "aasist_raw_persistent": 1.0,
+        "final_fused_score": 0.8243,
+        "final_llr": 1.5457
+      },
+      "white_noise_amp_1.0": {
+        "forensics_window_median": 0.8088,
+        "aasist_raw_persistent": 1.0,
+        "final_fused_score": 0.8715,
+        "final_llr": 1.9146
+      },
+      "pure_tone_1khz": {
+        "forensics_window_median": 0.8261,
+        "aasist_raw_persistent": 1.0,
+        "final_fused_score": 0.8831,
+        "final_llr": 2.0218
+      },
+      "heavily_clipped_1khz": {
+        "forensics_window_median": 0.8356,
+        "aasist_raw_persistent": 1.0,
+        "final_fused_score": 0.889,
+        "final_llr": 2.0807
+      }
+    },
+    "unique_scores_observed": 5,
+    "pass_criterion": "Scores vary dynamically with input signal properties (not a static constant response)",
+    "status": "PASS"
+  },
+  "c7_crop_test": {
+    "test": "C7_crop_test",
+    "crop_duration_seconds": 2.0,
+    "n_trials": 300,
+    "eer_pct": 0.44,
+    "eer_threshold": 0.1365,
+    "roc_auc": 0.9998,
+    "bonafide_mean": 0.0697,
+    "bonafide_std": 0.0065,
+    "spoof_mean": 0.8699,
+    "spoof_std": 0.126,
+    "pass_criterion": "Measure whether 2.0s crops retain separation or collapse",
+    "status": "PASS"
+  },
+  "c8_noise_sweep": {
+    "test": "C8_noise_sweep",
+    "snr_levels": {
+      "snr_30db": {
+        "snr_db": 30,
+        "eer_pct": 0.0,
+        "eer_threshold": 0.2297,
+        "roc_auc": 1.0,
+        "bonafide_mean": 0.0693,
+        "spoof_mean": 0.903
+      },
+      "snr_20db": {
+        "snr_db": 20,
+        "eer_pct": 0.44,
+        "eer_threshold": 0.8766,
+        "roc_auc": 0.9999,
+        "bonafide_mean": 0.0812,
+        "spoof_mean": 0.9065
+      },
+      "snr_10db": {
+        "snr_db": 10,
+        "eer_pct": 0.44,
+        "eer_threshold": 0.5714,
+        "roc_auc": 0.9999,
+        "bonafide_mean": 0.084,
+        "spoof_mean": 0.8999
+      },
+      "snr_5db": {
+        "snr_db": 5,
+        "eer_pct": 2.19,
+        "eer_threshold": 0.6046,
+        "roc_auc": 0.999,
+        "bonafide_mean": 0.1097,
+        "spoof_mean": 0.8832
+      },
+      "snr_0db": {
+        "snr_db": 0,
+        "eer_pct": 3.07,
+        "eer_threshold": 0.2717,
+        "roc_auc": 0.9964,
+        "bonafide_mean": 0.12,
+        "spoof_mean": 0.8063
+      }
+    },
+    "gradual_degradation_observed": true,
+    "pass_criterion": "Performance degrades gracefully with increasing noise (EER increases as SNR drops)",
+    "status": "PASS"
+  },
+  "c9_distribution_health": {
+    "test": "C9_distribution_health",
+    "total_trials": 300,
+    "n_unique_fused_scores": 86,
+    "n_unique_forensics_scores": 109,
+    "fraction_near_extreme_boundaries": 0.0,
+    "histogram_artifact": "docs/score_distribution_histograms.png",
+    "pass_criterion": "Sufficient score diversity without artificial saturation at boundaries (unique > 50)",
+    "status": "PASS"
+  }
+}

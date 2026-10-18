@@ -1,0 +1,248 @@
+{
+  "timestamp": "2026-10-18T16:47:53Z",
+  "slice_1": {
+    "cohort": "Slice_1_Original",
+    "n_trials": 300,
+    "n_bonafide": 72,
+    "n_spoof": 228,
+    "unique_speakers": 208,
+    "channels": {
+      "clean_16k": {
+        "eer_pct": 0.0,
+        "eer_threshold": 0.2121,
+        "asv_mindcf": 0.0,
+        "asv_actdcf": 0.0,
+        "banking_mindcf": 0.0,
+        "banking_actdcf": 0.0,
+        "cllr": 0.1094,
+        "bonafide": {
+          "mean": 0.0665,
+          "std": 0.0027,
+          "min": 0.0614,
+          "max": 0.0747
+        },
+        "spoof": {
+          "mean": 0.9031,
+          "std": 0.0462,
+          "min": 0.2121,
+          "max": 0.9147
+        },
+        "evaluation_time_seconds": 437.79
+      },
+      "g711_alaw": {
+        "eer_pct": 0.0,
+        "eer_threshold": 0.8434,
+        "asv_mindcf": 0.0,
+        "asv_actdcf": 0.0264,
+        "banking_mindcf": 0.0,
+        "banking_actdcf": 0.1375,
+        "cllr": 0.1039,
+        "bonafide": {
+          "mean": 0.0683,
+          "std": 0.0068,
+          "min": 0.0616,
+          "max": 0.1146
+        },
+        "spoof": {
+          "mean": 0.9064,
+          "std": 0.0051,
+          "min": 0.8434,
+          "max": 0.9164
+        },
+        "evaluation_time_seconds": 388.59
+      },
+      "g711_mulaw": {
+        "eer_pct": 0.0,
+        "eer_threshold": 0.8385,
+        "asv_mindcf": 0.0,
+        "asv_actdcf": 0.0264,
+        "banking_mindcf": 0.0,
+        "banking_actdcf": 0.1375,
+        "cllr": 0.1039,
+        "bonafide": {
+          "mean": 0.0683,
+          "std": 0.0068,
+          "min": 0.0618,
+          "max": 0.1152
+        },
+        "spoof": {
+          "mean": 0.9064,
+          "std": 0.0053,
+          "min": 0.8385,
+          "max": 0.9167
+        },
+        "evaluation_time_seconds": 443.8
+      },
+      "opus_narrowband": {
+        "eer_pct": 0.0,
+        "eer_threshold": 0.7994,
+        "asv_mindcf": 0.0,
+        "asv_actdcf": 0.0264,
+        "banking_mindcf": 0.0,
+        "banking_actdcf": 0.1375,
+        "cllr": 0.1048,
+        "bonafide": {
+          "mean": 0.0704,
+          "std": 0.0163,
+          "min": 0.0625,
+          "max": 0.202
+        },
+        "spoof": {
+          "mean": 0.9063,
+          "std": 0.0079,
+          "min": 0.7994,
+          "max": 0.9161
+        },
+        "evaluation_time_seconds": 473.87
+      },
+      "bandpass_g711_not_amr": {
+        "eer_pct": 0.0,
+        "eer_threshold": 0.3652,
+        "asv_mindcf": 0.0,
+        "asv_actdcf": 0.0792,
+        "banking_mindcf": 0.0,
+        "banking_actdcf": 0.4125,
+        "cllr": 0.1101,
+        "bonafide": {
+          "mean": 0.0708,
+          "std": 0.0104,
+          "min": 0.0637,
+          "max": 0.1306
+        },
+        "spoof": {
+          "mean": 0.9003,
+          "std": 0.0417,
+          "min": 0.3652,
+          "max": 0.9164
+        },
+        "evaluation_time_seconds": 380.1
+      }
+    }
+  },
+  "slice_2": {
+    "cohort": "Slice_2_Fresh_Disjoint",
+    "n_trials": 300,
+    "n_bonafide": 92,
+    "n_spoof": 208,
+    "unique_speakers": 192,
+    "channels": {
+      "clean_16k": {
+        "eer_pct": 0.0,
+        "eer_threshold": 0.8853,
+        "asv_mindcf": 0.0,
+        "asv_actdcf": 0.1033,
+        "banking_mindcf": 0.0,
+        "banking_actdcf": 0.538,
+        "cllr": 0.1074,
+        "bonafide": {
+          "mean": 0.0731,
+          "std": 0.0371,
+          "min": 0.0617,
+          "max": 0.419
+        },
+        "spoof": {
+          "mean": 0.9064,
+          "std": 0.0023,
+          "min": 0.8854,
+          "max": 0.9152
+        },
+        "evaluation_time_seconds": 399.14
+      },
+      "g711_alaw": {
+        "eer_pct": 0.0,
+        "eer_threshold": 0.8457,
+        "asv_mindcf": 0.0,
+        "asv_actdcf": 0.1652,
+        "banking_mindcf": 0.0,
+        "banking_actdcf": 0.8609,
+        "cllr": 0.1067,
+        "bonafide": {
+          "mean": 0.0755,
+          "std": 0.0228,
+          "min": 0.0621,
+          "max": 0.1872
+        },
+        "spoof": {
+          "mean": 0.906,
+          "std": 0.0064,
+          "min": 0.8457,
+          "max": 0.9154
+        },
+        "evaluation_time_seconds": 399.81
+      },
+      "g711_mulaw": {
+        "eer_pct": 0.0,
+        "eer_threshold": 0.8473,
+        "asv_mindcf": 0.0,
+        "asv_actdcf": 0.1652,
+        "banking_mindcf": 0.0,
+        "banking_actdcf": 0.8609,
+        "cllr": 0.1082,
+        "bonafide": {
+          "mean": 0.0777,
+          "std": 0.0347,
+          "min": 0.0622,
+          "max": 0.2837
+        },
+        "spoof": {
+          "mean": 0.9059,
+          "std": 0.0065,
+          "min": 0.8473,
+          "max": 0.9154
+        },
+        "evaluation_time_seconds": 397.74
+      },
+      "opus_narrowband": {
+        "eer_pct": 0.0,
+        "eer_threshold": 0.838,
+        "asv_mindcf": 0.0,
+        "asv_actdcf": 0.2065,
+        "banking_mindcf": 0.0,
+        "banking_actdcf": 1.0761,
+        "cllr": 0.1121,
+        "bonafide": {
+          "mean": 0.0833,
+          "std": 0.0499,
+          "min": 0.0621,
+          "max": 0.4354
+        },
+        "spoof": {
+          "mean": 0.9059,
+          "std": 0.0072,
+          "min": 0.838,
+          "max": 0.9155
+        },
+        "evaluation_time_seconds": 392.66
+      },
+      "bandpass_g711_not_amr": {
+        "eer_pct": 0.48,
+        "eer_threshold": 0.8047,
+        "asv_mindcf": 0.0048,
+        "asv_actdcf": 0.1652,
+        "banking_mindcf": 0.0048,
+        "banking_actdcf": 0.8609,
+        "cllr": 0.1287,
+        "bonafide": {
+          "mean": 0.0865,
+          "std": 0.085,
+          "min": 0.0626,
+          "max": 0.7928
+        },
+        "spoof": {
+          "mean": 0.9007,
+          "std": 0.0359,
+          "min": 0.4227,
+          "max": 0.9146
+        },
+        "evaluation_time_seconds": 360.6
+      }
+    }
+  },
+  "codecs_used": {
+    "clean_16k": "Uncompressed 16 kHz FLAC baseline",
+    "g711_alaw": "Real ITU-T G.711 A-law (8 kHz, 8-bit companding via libsndfile)",
+    "g711_mulaw": "Real ITU-T G.711 mu-law (8 kHz, 8-bit companding via libsndfile)",
+    "opus_narrowband": "Real Opus narrowband (8 kHz via libsndfile OGG/OPUS)",
+    "bandpass_g711_not_amr": "Bandpass 300-3400 Hz 4th-order Butterworth + G.711 A-law (not AMR)"
+  }
+}

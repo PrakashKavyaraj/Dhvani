@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-10-18T17:21:10Z",
+  "hardware": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "release": "27.0.0",
+    "cpu_count": 10,
+    "torch_threads": 4
+  },
+  "test_parameters": {
+    "duration_per_level_seconds": 180.0,
+    "arrival_interval_seconds": 1.0,
+    "model_tested": "Full AEGIS Production Pipeline (Forensics-0.3B + AASIST-L + ECAPA + VAD + PAD + Liveness + Fusion)",
+    "audio_window_seconds": 1.5
+  },
+  "max_streams_sustaining_99pct_compliance": 0,
+  "concurrency_levels": {
+    "streams_1": {
+      "num_streams": 1,
+      "duration_seconds": 180.0,
+      "total_requests": 180,
+      "expected_requests": 180,
+      "p50_ms": 416.3,
+      "p90_ms": 443.0,
+      "p95_ms": 452.29,
+      "p99_ms": 500.4,
+      "max_ms": 683.78,
+      "pct_under_350ms": 0.0,
+      "avg_cpu_percent": 20.2,
+      "compliant_99pct": false
+    },
+    "streams_2": {
+      "num_streams": 2,
+      "duration_seconds": 180.0,
+      "total_requests": 360,
+      "expected_requests": 360,
+      "p50_ms": 1185.36,
+      "p90_ms": 1306.54,
+      "p95_ms": 1424.21,
+      "p99_ms": 1623.27,
+      "max_ms": 1749.64,
+      "pct_under_350ms": 0.0,
+      "avg_cpu_percent": 47.5,
+      "compliant_99pct": false
+    },
+    "streams_4": {
+      "num_streams": 4,
+      "duration_seconds": 180.0,
+      "total_requests": 720,
+      "expected_requests": 720,
+      "p50_ms": 56848.88,
+      "p90_ms": 101292.41,
+      "p95_ms": 105490.4,
+      "p99_ms": 109103.46,
+      "max_ms": 110588.96,
+      "pct_under_350ms": 0.0,
+      "avg_cpu_percent": 67.4,
+      "compliant_99pct": false
+    },
+    "streams_8": {
+      "num_streams": 8,
+      "duration_seconds": 180.0,
+      "total_requests": 1440,
+      "expected_requests": 1440,
+      "p50_ms": 338543.47,
+      "p90_ms": 568864.34,
+      "p95_ms": 592952.1,
+      "p99_ms": 612656.16,
+      "max_ms": 616765.21,
+      "pct_under_350ms": 0.0,
+      "avg_cpu_percent": 89.1,
+      "compliant_99pct": false
+    }
+  }
+}
