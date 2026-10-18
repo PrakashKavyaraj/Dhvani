@@ -22,8 +22,10 @@ Pre-registering evaluation criteria, cost profiles, confidence intervals, and de
 * **v1.1 (2026-10-18T18:55:00Z: Pre-Run Amendment)**:
   1. **Official Cost Profile Alignment**: Amended the ASVspoof 5 standard profile to $C_{\text{miss}} = 10.0, C_{\text{fa}} = 1.0, P_{\text{target}} = 0.05$. In the official challenge evaluation plan (which uses a bonafide-target convention), the penalty for rejecting a genuine speaker is 1 and the penalty for accepting a spoof is 10. Under Dhvani's fraud-detection / spoof-positive convention (where spoof is the target class $y=1$), missing a spoof is penalized with cost 10 and false alarming on genuine speech is penalized with cost 1, yielding the exact official Bayes cost ratio ($\beta \approx 1.90$).
   2. **Model Provenance Disclosure (Zero-Shot Baseline)**: Formally disclosed that current model weights (AASIST-L trained on ASVspoof 2019 LA; Forensics-0.3B trained on open-source web/wild speech) were not trained on the ASVspoof 5 training partition (attacks A01-A08). The upcoming scoring run is explicitly classified as a **zero-shot cross-dataset evaluation**, which establishes the lower baseline before task-specific fine-tuning.
-  3. **Dev vs. Eval Codec Mismatch Notice**: Highlighted that ASVspoof 5 Dev contains predominantly clean uncompressed speech, whereas Eval introduces telephony codecs C01 through C11. A calibrator fit on clean Dev audio is expected to experience calibration drift on Eval codecs unless codec augmentation is introduced.
+  3. **Dev vs. Eval Codec Mismatch Notice**: Highlighted that ASVspoof 5 Dev contains predominantly clean uncompressed speech, whereas Eval introduces evaluation conditions C01 through C11 (various lossy and transmission codecs). A calibrator fit on clean Dev audio is expected to experience calibration drift on Eval codecs unless codec augmentation is introduced.
   4. **Pilot Readiness Gate Rationales**: Renamed statutory gates to "Pilot readiness gates" and documented quantitative engineering justifications for each threshold.
+  5. **Threshold Scale Harmonization**: Replaced probability-scale threshold ambiguities with the canonical invariant Log-Likelihood Ratio threshold ($\theta_{\text{LLR}} = \ln \beta$). Clarified that $\theta_{\text{LLR}} = +0.6419$ for ASVspoof 5 and $+2.2925$ for Banking Risk, while the true posterior probability cutoff under $P_{\text{target}}$ is $\frac{C_{\text{fa}}}{C_{\text{fa}} + C_{\text{miss}}} = \frac{1}{11} \approx 0.0909$ for both profiles.
+  6. **Utterance-Level Window Aggregation & Fusion Invariants**: Documented and frozen the mathematical window pooling rules (median for Forensics-0.3B, 90th percentile for AASIST-L) and multimodal fusion weights prior to scoring the evaluation split.
 
 ---
 
@@ -52,6 +54,31 @@ To guarantee empirical validity, the evaluation harness enforces three mathemati
 2. **Holdout Generator Isolation:** Dev contains attacks `A09` through `A16`; Eval contains attacks `A17` through `A32`. All 16 generative attacks in Eval are zero-day holdouts relative to Dev.
 3. **Partition-Isolated Score Normalization:** Normalization parameters $(\mu_{\text{dev}}, \sigma_{\text{dev}})$ and Platt calibration coefficients $(a, b)$ are derived solely from the development partition and applied statically to evaluation scores.
 
+### 2.4 Utterance-Level Window Aggregation & Multimodal Fusion Rules
+To ensure complete reproducibility and prevent post-hoc metric tuning, all temporal window segmentation and multimodal evidence fusion operations follow strict, pre-registered mathematical rules:
+
+1. **Primary Countermeasure (Forensics-0.3B Window Pooling)**:
+   * **Window Length**: 5.0 seconds (80,000 samples @ 16 kHz).
+   * **Hop Size**: 1.25 seconds (20,000 samples @ 16 kHz).
+   * **Aggregation Formula**:
+     * For duration $T \le 5.0\text{s}$: Single centered crop (repeat-padded if $T < 5.0\text{s}$). Utterance score equals the center window score $s_{\text{center}}$.
+     * For duration $T > 5.0\text{s}$: Sliding windows extracted every 1.25s. The utterance score is the **median** across all temporal window scores:
+       $$s_{\text{forensics}} = \text{median}(\{s_1, s_2, \dots, s_K\})$$
+     The median provides robustness against short transient acoustic disturbances or ambient background clicks.
+
+2. **Secondary Countermeasure (AASIST-L Graph Attention Window Pooling)**:
+   * **Window Length**: 64,600 samples (~4.0375 seconds @ 16 kHz).
+   * **Hop Size**: 32,300 samples (50% overlap).
+   * **Aggregation Formula**:
+     * If $K \le 2$ windows: Persistent evidence equals $\max(\{s_1, \dots, s_K\})$.
+     * If $K > 2$ windows: Persistent evidence equals the **90th percentile** across temporal windows:
+       $$s_{\text{aasist}} = \text{Percentile}_{90}(\{s_1, s_2, \dots, s_K\})$$
+
+3. **Multimodal Fusion Engine**:
+   * For Track 1 biometric countermeasure trials, the primary acoustic score $s_{\text{forensics}}$ serves as the ground countermeasure score.
+   * In multi-tiered banking deployments, secondary evidence ($s_{\text{aasist}}$) and speaker verification similarity ($s_{\text{spk}}$) are fused with channel reliability weighting ($R_{\text{channel}}$).
+   * All fusion rules and weights are strictly frozen prior to evaluation scoring and are never adjusted based on evaluation partition performance.
+
 ---
 
 ## 3. Cost Profiles & Quantitative Performance Metrics
@@ -74,15 +101,22 @@ In Dhvani's countermeasure orientation, the positive class ($y=1$) is spoof spee
 | **$C_{\text{fa}}$** (Cost of False Alarm on Genuine) | 1.0 | 1.0 | Official ASVspoof 5 plan penalizes rejecting genuine speech with cost 1. In banking, false alerts trigger MFA step-up. |
 | **$P_{\text{target}}$** (Attack Prior $P_{\text{spoof}}$) | 0.05 | 0.01 | Challenge benchmark assumes a 5% attack prior; live banking contact centers operate at ~1% attack prior. |
 | **Bayes Prior-Cost Ratio $\beta$** | 1.90 ($\frac{1.0 \times 0.95}{10.0 \times 0.05}$) | 9.90 ($\frac{1.0 \times 0.99}{10.0 \times 0.01}$) | Relative cost balancing false alarms against missed attacks. |
-| **Bayes Probability Threshold $\theta_{\text{Bayes}}$** | 0.6552 | 0.9083 | Optimal Bayes operating point in calibrated posterior probability space. |
-| **Bayes LLR Threshold $\theta_{\text{LLR}}$** | +0.6419 ($\ln 1.90$) | +2.2925 ($\ln 9.90$) | Optimal Bayes operating point in Log-Likelihood Ratio space. |
+| **Canonical Bayes LLR Threshold $\theta_{\text{LLR}}$** | **+0.6419** ($\ln 1.90$) | **+2.2925** ($\ln 9.90$) | Invariant decision threshold in Log-Likelihood Ratio space: $\theta_{\text{LLR}} = \ln \beta$. Primary benchmark cutoff. |
+| **Deployment Posterior Cutoff $\theta_{\text{post}}$** | **0.0909** ($\frac{C_{\text{fa}}}{C_{\text{fa}} + C_{\text{miss}}} = \frac{1}{11}$) | **0.0909** ($\frac{C_{\text{fa}}}{C_{\text{fa}} + C_{\text{miss}}} = \frac{1}{11}$) | Theoretical Bayes cutoff on true posterior probability under the deployment prior $P_{\text{target}}$. |
+| **Balanced Sigmoid Cutoff $\sigma(\theta_{\text{LLR}})$** | 0.6552 ($\frac{\beta}{1 + \beta}$) | 0.9083 ($\frac{\beta}{1 + \beta}$) | Cutoff on $\text{sigmoid}(\text{LLR})$ space, which implicitly assumes a balanced 50/50 synthetic prior. |
+
+> [!NOTE]
+> **Threshold Scale Harmonization**: Decision theory defines the Bayes optimal cutoff uniquely on the Log-Likelihood Ratio (LLR) scale as $\theta_{\text{LLR}} = \ln \beta$. Mapping this cutoff to a probability scale depends entirely on the prior:
+> 1. In canonical **LLR space**, the thresholds are strictly $+0.6419$ (ASVspoof 5) and $+2.2925$ (Banking).
+> 2. On the **deployment posterior probability scale** ($P(\text{spoof} \mid s)$ under $P_{\text{target}}$), the threshold reduces to $\frac{C_{\text{fa}}}{C_{\text{fa}} + C_{\text{miss}}} = \frac{1}{11} \approx 0.0909$ for both profiles because the prior terms cancel in the posterior odds.
+> 3. The value $0.6552$ equals $\frac{\beta}{1 + \beta}$, which represents the cutoff on a synthetic $\text{sigmoid}(\text{LLR})$ scale assuming equal (50/50) prior odds, not the deployment posterior. To prevent ambiguity across prior conventions, all formal benchmark evaluations evaluate actDCF directly on calibrated Log-Likelihood Ratios using $\theta_{\text{LLR}}$.
 
 ### 3.3 Metric Suite
 1. **Equal Error Rate (EER, %):** The operating threshold where $P_{\text{miss}} = P_{\text{fa}}$. Serves as an uncalibrated capability baseline.
 2. **Minimum DCF ($\min\text{DCF}$):** Theoretical best cost achieved by selecting the oracle a posteriori threshold on the evaluation set.
-3. **Actual DCF ($\text{actDCF}$):** Operational cost achieved using the fixed Bayes threshold derived from Platt scaling fitted on the development set:
+3. **Actual DCF ($\text{actDCF}$):** Operational cost achieved using the fixed Bayes threshold $\theta_{\text{LLR}}$ evaluated on calibrated Log-Likelihood Ratios:
 
-$$\text{actDCF} = \text{NDCF}(\theta_{\text{Bayes}})$$
+$$\text{actDCF} = \text{NDCF}(\theta_{\text{LLR}})$$
 
 4. **Calibration Loss Gap:**
 

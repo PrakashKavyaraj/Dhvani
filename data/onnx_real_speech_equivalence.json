@@ -1,0 +1,2738 @@
+{
+  "timestamp": "2026-10-18T14:27:10Z",
+  "model": "AASIST-L",
+  "dataset": "ASVspoof 5 Development Real Audio Trials",
+  "total_trials": 300,
+  "bonafide_trials": 72,
+  "spoof_trials": 228,
+  "benchmark_duration_seconds": 48.27,
+  "numerical_equivalence": {
+    "max_absolute_error": 1.3e-06,
+    "mean_absolute_error": 1e-07,
+    "rmse": 3e-07,
+    "tolerance_threshold": 0.0001,
+    "within_tolerance": true,
+    "decision_parity_percent": 100.0
+  },
+  "metric_parity": {
+    "pytorch": {
+      "eer": 0.36111,
+      "eer_threshold": 0.97156,
+      "min_dcf": 0.8206,
+      "cllr": 1.6319
+    },
+    "onnx_runtime": {
+      "eer": 0.36111,
+      "eer_threshold": 0.97156,
+      "min_dcf": 0.8206,
+      "cllr": 1.6319
+    },
+    "delta": {
+      "delta_eer": 0.0,
+      "delta_min_dcf": 0.0,
+      "delta_cllr": 0.0
+    }
+  },
+  "trials": [
+    {
+      "trial_id": "D_0000000001",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.24918,
+      "onnx_score": 0.24918,
+      "abs_error": 6e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000022",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99899,
+      "onnx_score": 0.99899,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000043",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.0024,
+      "onnx_score": 0.0024,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000064",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99998,
+      "onnx_score": 0.99998,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000085",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.96994,
+      "onnx_score": 0.96994,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000106",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.94755,
+      "onnx_score": 0.94755,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000127",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.49762,
+      "onnx_score": 0.49762,
+      "abs_error": 4e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000148",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99953,
+      "onnx_score": 0.99953,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000169",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000190",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99043,
+      "onnx_score": 0.99043,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000211",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.93641,
+      "onnx_score": 0.93641,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000232",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.98621,
+      "onnx_score": 0.98621,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000253",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99902,
+      "onnx_score": 0.99902,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000274",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.01307,
+      "onnx_score": 0.01307,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000295",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.48687,
+      "onnx_score": 0.48686,
+      "abs_error": 9e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000316",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99946,
+      "onnx_score": 0.99946,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000337",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99654,
+      "onnx_score": 0.99654,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000358",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 1e-05,
+      "onnx_score": 1e-05,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000379",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.0,
+      "onnx_score": 0.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000400",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99589,
+      "onnx_score": 0.99589,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000421",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 2e-05,
+      "onnx_score": 2e-05,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000442",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99983,
+      "onnx_score": 0.99983,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000463",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000484",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99996,
+      "onnx_score": 0.99996,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000505",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000526",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.88461,
+      "onnx_score": 0.88461,
+      "abs_error": 5e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000547",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99994,
+      "onnx_score": 0.99994,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000568",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.69789,
+      "onnx_score": 0.69789,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000589",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99587,
+      "onnx_score": 0.99587,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000610",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.16253,
+      "onnx_score": 0.16253,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000631",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.97608,
+      "onnx_score": 0.97608,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000652",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99622,
+      "onnx_score": 0.99622,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000673",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99989,
+      "onnx_score": 0.99989,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000694",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99435,
+      "onnx_score": 0.99435,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000715",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99135,
+      "onnx_score": 0.99135,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000736",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.79544,
+      "onnx_score": 0.79544,
+      "abs_error": 4e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000757",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000778",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000799",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000820",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.39491,
+      "onnx_score": 0.39491,
+      "abs_error": 3e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000841",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99716,
+      "onnx_score": 0.99716,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000862",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.97402,
+      "onnx_score": 0.97402,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000883",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.90011,
+      "onnx_score": 0.90011,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000904",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.33181,
+      "onnx_score": 0.33182,
+      "abs_error": 6e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000925",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99594,
+      "onnx_score": 0.99594,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000946",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.00382,
+      "onnx_score": 0.00382,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000967",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.98043,
+      "onnx_score": 0.98043,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000000988",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.98305,
+      "onnx_score": 0.98305,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001009",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.93215,
+      "onnx_score": 0.93215,
+      "abs_error": 4e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001030",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.95975,
+      "onnx_score": 0.95975,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001051",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001072",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.9999,
+      "onnx_score": 0.9999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001093",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.95553,
+      "onnx_score": 0.95553,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001114",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.01006,
+      "onnx_score": 0.01006,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001135",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99985,
+      "onnx_score": 0.99985,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001156",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99957,
+      "onnx_score": 0.99957,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001177",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.92832,
+      "onnx_score": 0.92832,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001198",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.31799,
+      "onnx_score": 0.31799,
+      "abs_error": 3e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001219",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99994,
+      "onnx_score": 0.99994,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001240",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001261",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.91384,
+      "onnx_score": 0.91384,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001282",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.23009,
+      "onnx_score": 0.23009,
+      "abs_error": 1e-06,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001303",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99497,
+      "onnx_score": 0.99497,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001324",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.97407,
+      "onnx_score": 0.97407,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001345",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99997,
+      "onnx_score": 0.99997,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001366",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99877,
+      "onnx_score": 0.99877,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001387",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99608,
+      "onnx_score": 0.99608,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001408",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.90472,
+      "onnx_score": 0.90472,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001429",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.00547,
+      "onnx_score": 0.00547,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001450",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99978,
+      "onnx_score": 0.99978,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001471",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99976,
+      "onnx_score": 0.99976,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001492",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99924,
+      "onnx_score": 0.99924,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001513",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.95234,
+      "onnx_score": 0.95234,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001534",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99912,
+      "onnx_score": 0.99912,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001555",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.85699,
+      "onnx_score": 0.85699,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001576",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.0005,
+      "onnx_score": 0.0005,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001597",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.93062,
+      "onnx_score": 0.93062,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001618",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.30875,
+      "onnx_score": 0.30875,
+      "abs_error": 6e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001639",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99982,
+      "onnx_score": 0.99982,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001660",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001681",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001702",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.00511,
+      "onnx_score": 0.00511,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001723",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.5753,
+      "onnx_score": 0.5753,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001744",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99643,
+      "onnx_score": 0.99643,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001765",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.5418,
+      "onnx_score": 0.5418,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001786",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 3e-05,
+      "onnx_score": 3e-05,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001807",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.9408,
+      "onnx_score": 0.9408,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001828",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.68496,
+      "onnx_score": 0.68496,
+      "abs_error": 7e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001849",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001870",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.00157,
+      "onnx_score": 0.00157,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001891",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99986,
+      "onnx_score": 0.99986,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001912",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.992,
+      "onnx_score": 0.992,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001933",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.99835,
+      "onnx_score": 0.99835,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001954",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.04955,
+      "onnx_score": 0.04955,
+      "abs_error": 4e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001975",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.21909,
+      "onnx_score": 0.21909,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000001996",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.00011,
+      "onnx_score": 0.00011,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002017",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002038",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99919,
+      "onnx_score": 0.99919,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002059",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99166,
+      "onnx_score": 0.99166,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002080",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.95706,
+      "onnx_score": 0.95706,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002101",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002122",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.84598,
+      "onnx_score": 0.84598,
+      "abs_error": 1e-06,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002143",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002164",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002185",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99998,
+      "onnx_score": 0.99998,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002206",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.98922,
+      "onnx_score": 0.98922,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002227",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99964,
+      "onnx_score": 0.99964,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002248",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002269",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.95,
+      "onnx_score": 0.95,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002290",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.12749,
+      "onnx_score": 0.12749,
+      "abs_error": 6e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002311",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.02282,
+      "onnx_score": 0.02282,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002332",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.00015,
+      "onnx_score": 0.00015,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002353",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.58964,
+      "onnx_score": 0.58964,
+      "abs_error": 1.3e-06,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002374",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99986,
+      "onnx_score": 0.99986,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002395",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.13176,
+      "onnx_score": 0.13176,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002416",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.69961,
+      "onnx_score": 0.69961,
+      "abs_error": 6e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002437",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.99939,
+      "onnx_score": 0.99939,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002458",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99632,
+      "onnx_score": 0.99632,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002479",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.00084,
+      "onnx_score": 0.00084,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002500",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002521",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.63682,
+      "onnx_score": 0.63682,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002542",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002563",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99169,
+      "onnx_score": 0.99169,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002584",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99829,
+      "onnx_score": 0.99829,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002605",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.98627,
+      "onnx_score": 0.98627,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002626",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99982,
+      "onnx_score": 0.99982,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002647",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99997,
+      "onnx_score": 0.99997,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002668",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.06167,
+      "onnx_score": 0.06167,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002689",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99921,
+      "onnx_score": 0.99921,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002710",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.97089,
+      "onnx_score": 0.97089,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002731",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.57646,
+      "onnx_score": 0.57646,
+      "abs_error": 8e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002752",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002773",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99989,
+      "onnx_score": 0.99989,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002794",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.96555,
+      "onnx_score": 0.96555,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002815",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99989,
+      "onnx_score": 0.99989,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002836",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.2124,
+      "onnx_score": 0.2124,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002857",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.98437,
+      "onnx_score": 0.98437,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002878",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002899",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.82104,
+      "onnx_score": 0.82104,
+      "abs_error": 4e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002920",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002941",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.09584,
+      "onnx_score": 0.09584,
+      "abs_error": 3e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002962",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.03623,
+      "onnx_score": 0.03623,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000002983",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99824,
+      "onnx_score": 0.99824,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003004",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.95747,
+      "onnx_score": 0.95747,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003025",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003046",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.9397,
+      "onnx_score": 0.9397,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003067",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.66424,
+      "onnx_score": 0.66424,
+      "abs_error": 6e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003088",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003109",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003130",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.00019,
+      "onnx_score": 0.00019,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003151",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003172",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99803,
+      "onnx_score": 0.99803,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003193",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99927,
+      "onnx_score": 0.99927,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003214",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.98958,
+      "onnx_score": 0.98958,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003235",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.9995,
+      "onnx_score": 0.9995,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003256",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99987,
+      "onnx_score": 0.99987,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003277",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.98644,
+      "onnx_score": 0.98644,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003298",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99637,
+      "onnx_score": 0.99637,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003319",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99554,
+      "onnx_score": 0.99554,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003340",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.43205,
+      "onnx_score": 0.43205,
+      "abs_error": 3e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003361",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.9992,
+      "onnx_score": 0.9992,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003382",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.91015,
+      "onnx_score": 0.91015,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003403",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.89645,
+      "onnx_score": 0.89645,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003424",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99998,
+      "onnx_score": 0.99998,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003445",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.82206,
+      "onnx_score": 0.82206,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003466",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.3202,
+      "onnx_score": 0.3202,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003487",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.30932,
+      "onnx_score": 0.30932,
+      "abs_error": 1.3e-06,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003508",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003529",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.41007,
+      "onnx_score": 0.41007,
+      "abs_error": 5e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003550",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.00168,
+      "onnx_score": 0.00168,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003571",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.98868,
+      "onnx_score": 0.98868,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003592",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99528,
+      "onnx_score": 0.99528,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003613",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.98699,
+      "onnx_score": 0.98699,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003634",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99972,
+      "onnx_score": 0.99972,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003655",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.93354,
+      "onnx_score": 0.93354,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003676",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.93661,
+      "onnx_score": 0.93661,
+      "abs_error": 5e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003697",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99837,
+      "onnx_score": 0.99837,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003718",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.83899,
+      "onnx_score": 0.83899,
+      "abs_error": 1e-06,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003739",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99495,
+      "onnx_score": 0.99495,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003760",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.00226,
+      "onnx_score": 0.00226,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003781",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.98964,
+      "onnx_score": 0.98964,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003802",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.71851,
+      "onnx_score": 0.71851,
+      "abs_error": 4e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003823",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.7405,
+      "onnx_score": 0.7405,
+      "abs_error": 1.2e-06,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003844",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.93147,
+      "onnx_score": 0.93147,
+      "abs_error": 4e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003865",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99975,
+      "onnx_score": 0.99975,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003886",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.9961,
+      "onnx_score": 0.9961,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003907",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99977,
+      "onnx_score": 0.99977,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003928",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003949",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.61917,
+      "onnx_score": 0.61917,
+      "abs_error": 1e-06,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003970",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.98958,
+      "onnx_score": 0.98958,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000003991",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004012",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99727,
+      "onnx_score": 0.99727,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004033",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.9947,
+      "onnx_score": 0.9947,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004054",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004075",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.74808,
+      "onnx_score": 0.74808,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004096",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99721,
+      "onnx_score": 0.99721,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004117",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.97373,
+      "onnx_score": 0.97373,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004138",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.98219,
+      "onnx_score": 0.98219,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004159",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99711,
+      "onnx_score": 0.99711,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004180",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004201",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99973,
+      "onnx_score": 0.99973,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004222",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004243",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.96292,
+      "onnx_score": 0.96292,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004264",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 8e-05,
+      "onnx_score": 8e-05,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004285",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.92166,
+      "onnx_score": 0.92166,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004306",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99895,
+      "onnx_score": 0.99895,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004327",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004348",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99624,
+      "onnx_score": 0.99624,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004369",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.10875,
+      "onnx_score": 0.10875,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004390",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99895,
+      "onnx_score": 0.99895,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004411",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99973,
+      "onnx_score": 0.99973,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004432",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99989,
+      "onnx_score": 0.99989,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004453",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004474",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.95895,
+      "onnx_score": 0.95895,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004495",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.63569,
+      "onnx_score": 0.63569,
+      "abs_error": 4e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004516",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.1283,
+      "onnx_score": 0.1283,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004537",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.92832,
+      "onnx_score": 0.92832,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004558",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.42671,
+      "onnx_score": 0.42671,
+      "abs_error": 6e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004579",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99743,
+      "onnx_score": 0.99743,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004600",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.98175,
+      "onnx_score": 0.98175,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004621",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99338,
+      "onnx_score": 0.99338,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004642",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99954,
+      "onnx_score": 0.99954,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004663",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004684",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.98668,
+      "onnx_score": 0.98668,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004705",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99702,
+      "onnx_score": 0.99702,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004726",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99497,
+      "onnx_score": 0.99497,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004747",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99973,
+      "onnx_score": 0.99973,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004768",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99986,
+      "onnx_score": 0.99986,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004789",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.10119,
+      "onnx_score": 0.10119,
+      "abs_error": 3e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004810",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.74599,
+      "onnx_score": 0.74599,
+      "abs_error": 7e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004831",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004852",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99855,
+      "onnx_score": 0.99855,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004873",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.94824,
+      "onnx_score": 0.94824,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004894",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.99828,
+      "onnx_score": 0.99828,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004915",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.21541,
+      "onnx_score": 0.21541,
+      "abs_error": 5e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004936",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.61165,
+      "onnx_score": 0.61165,
+      "abs_error": 4e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004957",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.19249,
+      "onnx_score": 0.19249,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004978",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99874,
+      "onnx_score": 0.99874,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000004999",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 6e-05,
+      "onnx_score": 6e-05,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005020",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.00353,
+      "onnx_score": 0.00353,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005041",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99998,
+      "onnx_score": 0.99998,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005062",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.90462,
+      "onnx_score": 0.90462,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005083",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.98973,
+      "onnx_score": 0.98973,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005104",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.95833,
+      "onnx_score": 0.95833,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005125",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.07242,
+      "onnx_score": 0.07242,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005146",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99621,
+      "onnx_score": 0.99621,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005167",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99958,
+      "onnx_score": 0.99958,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005188",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005209",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.94089,
+      "onnx_score": 0.94089,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005230",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.01162,
+      "onnx_score": 0.01162,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005251",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.91932,
+      "onnx_score": 0.91931,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005272",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.96794,
+      "onnx_score": 0.96794,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005293",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99945,
+      "onnx_score": 0.99945,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005314",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99628,
+      "onnx_score": 0.99628,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005335",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005356",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.91565,
+      "onnx_score": 0.91565,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005377",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.9729,
+      "onnx_score": 0.9729,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005398",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005419",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.20842,
+      "onnx_score": 0.20842,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005440",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.04564,
+      "onnx_score": 0.04564,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005461",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.09042,
+      "onnx_score": 0.09042,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005482",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99801,
+      "onnx_score": 0.99801,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005503",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99842,
+      "onnx_score": 0.99842,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005524",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.98166,
+      "onnx_score": 0.98166,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005545",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99707,
+      "onnx_score": 0.99707,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005566",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.63338,
+      "onnx_score": 0.63338,
+      "abs_error": 6e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005587",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.98921,
+      "onnx_score": 0.98921,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005608",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99998,
+      "onnx_score": 0.99998,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005629",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.97762,
+      "onnx_score": 0.97762,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005650",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005671",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.00017,
+      "onnx_score": 0.00017,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005692",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.8852,
+      "onnx_score": 0.8852,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005713",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005734",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99777,
+      "onnx_score": 0.99777,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005755",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 0.99996,
+      "onnx_score": 0.99996,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005776",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99943,
+      "onnx_score": 0.99943,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005797",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.9037,
+      "onnx_score": 0.9037,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005818",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.67694,
+      "onnx_score": 0.67694,
+      "abs_error": 9e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005839",
+      "label": 1,
+      "generator": "A09",
+      "pt_score": 0.93811,
+      "onnx_score": 0.93811,
+      "abs_error": 2e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005860",
+      "label": 1,
+      "generator": "A16",
+      "pt_score": 0.99778,
+      "onnx_score": 0.99778,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005881",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.99927,
+      "onnx_score": 0.99927,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005902",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.99999,
+      "onnx_score": 0.99999,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005923",
+      "label": 1,
+      "generator": "A10",
+      "pt_score": 0.99408,
+      "onnx_score": 0.99408,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005944",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.00385,
+      "onnx_score": 0.00385,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005965",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.00028,
+      "onnx_score": 0.00028,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000005986",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.31943,
+      "onnx_score": 0.31943,
+      "abs_error": 1.1e-06,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006007",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.78716,
+      "onnx_score": 0.78716,
+      "abs_error": 3e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006028",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.99683,
+      "onnx_score": 0.99683,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006049",
+      "label": 1,
+      "generator": "A15",
+      "pt_score": 0.43703,
+      "onnx_score": 0.43703,
+      "abs_error": 5e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006070",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.00057,
+      "onnx_score": 0.00057,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006091",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.63073,
+      "onnx_score": 0.63073,
+      "abs_error": 7e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006112",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 0.9996,
+      "onnx_score": 0.9996,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006133",
+      "label": 1,
+      "generator": "A12",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006154",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.99865,
+      "onnx_score": 0.99865,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006175",
+      "label": 1,
+      "generator": "A14",
+      "pt_score": 1.0,
+      "onnx_score": 1.0,
+      "abs_error": 0.0,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006196",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.92042,
+      "onnx_score": 0.92042,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006217",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.72181,
+      "onnx_score": 0.72181,
+      "abs_error": 3e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006238",
+      "label": 1,
+      "generator": "A13",
+      "pt_score": 0.95922,
+      "onnx_score": 0.95922,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006259",
+      "label": 0,
+      "generator": "bonafide",
+      "pt_score": 0.80127,
+      "onnx_score": 0.80127,
+      "abs_error": 1e-07,
+      "decision_parity": true
+    },
+    {
+      "trial_id": "D_0000006280",
+      "label": 1,
+      "generator": "A11",
+      "pt_score": 0.98982,
+      "onnx_score": 0.98982,
+      "abs_error": 0.0,
+      "decision_parity": true
+    }
+  ]
+}

@@ -141,9 +141,9 @@ def compute_dcf(
     if actual_threshold is not None:
         act_th = float(actual_threshold)
     else:
-        # Default Bayes optimal threshold if score is calibrated
-        prior_ratio = (cost_fa * (1.0 - p_target)) / (cost_miss * p_target)
-        act_th = float(1.0 / (1.0 + prior_ratio))
+        # Default Bayes optimal threshold on calibrated posterior probability scale:
+        # P(spoof|x) > C_fa / (C_fa + C_miss) = 1 / (1 + 10) = 0.0909
+        act_th = float(cost_fa / (cost_fa + cost_miss))
 
     fa_count = np.sum(bona >= act_th)
     miss_count = np.sum(spoof < act_th)
@@ -515,10 +515,13 @@ def run_synthetic_benchmark_suite() -> Dict[str, Any]:
         "attack_benchmarks": results_by_attack,
     }
 
-def compute_trial_score_from_audio(audio_path: Path) -> float:
+def compute_trial_score_from_audio(
+    audio_path: Path,
+    codec: str = "none",
+) -> float:
     """
     Computes an acoustic countermeasure score in [0, 1] from an audio file.
-    Resamples to 16kHz and runs in-memory streaming inference.
+    Resamples to 16kHz, optionally applies telephony degradation channel, and runs in-memory streaming inference.
     """
     try:
         import soundfile as sf
@@ -527,14 +530,20 @@ def compute_trial_score_from_audio(audio_path: Path) -> float:
             audio = audio.mean(axis=1)
         if sr != 16000:
             audio = resample_audio(audio, orig_sr=sr, target_sr=16000)
+
+        codec_clean = (codec or "none").strip().lower()
+        if codec_clean not in ("none", "raw", "clean"):
+            audio = apply_telephony_channel(audio, sample_rate=16000, codec=codec_clean)
+
         from app.core.models_loader import run_streaming_inference
-        verdict = run_streaming_inference(audio, session_id=f"EVAL-{audio_path.stem}")
+        session_prefix = f"EVAL-{codec_clean}" if codec_clean != "none" else "EVAL"
+        verdict = run_streaming_inference(audio, session_id=f"{session_prefix}-{audio_path.stem}")
         prob = verdict.get("calibrated_probability")
         if prob is not None:
             return float(prob)
         return float(verdict.get("risk_score", 50) / 100.0)
     except Exception as exc:
-        logger.warning("Error running inference on %s: %s", audio_path, exc)
+        logger.warning("Error running inference on %s (codec=%s): %s", audio_path, codec, exc)
         return 0.5
 
 

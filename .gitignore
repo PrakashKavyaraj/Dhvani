@@ -17,6 +17,8 @@ env/
 data/temp/*
 !data/temp/.gitkeep
 data/model-cache/
+data/asvspoof5_dev_slice/
+data/*_cache.json
 data/*.db
 data/*.sqlite3
 data/alerts_outbox.json

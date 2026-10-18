@@ -1,0 +1,314 @@
+{
+  "timestamp": "2026-10-18T14:21:55Z",
+  "dataset": "ASVspoof 5 Development Set (Zenodo DOI: 10.5281/zenodo.14498691)",
+  "protocol": "/Users/prakashkavyaraj/backend/data/asvspoof5_official/ASVspoof5.dev.track_1.tsv",
+  "total_trials": 300,
+  "bonafide_count": 72,
+  "spoof_count": 228,
+  "unique_speakers": 208,
+  "conditions": {
+    "clean_16k": {
+      "total_trials": 300,
+      "bonafide_count": 72,
+      "spoof_count": 228,
+      "unique_speakers": 208,
+      "eer": 0.0,
+      "eer_threshold": 0.2121,
+      "bonafide_score_mean": 0.0665,
+      "bonafide_score_std": 0.0027,
+      "spoof_score_mean": 0.9031,
+      "spoof_score_std": 0.0462,
+      "cllr": 0.1094,
+      "asvspoof_min_dcf": 0.0,
+      "asvspoof_act_dcf": 0.0044,
+      "banking_min_dcf": 0.0,
+      "banking_act_dcf": 0.0132,
+      "bootstrap_ci_95": {
+        "eer_percent": [
+          0.0,
+          0.0
+        ],
+        "asvspoof_mindcf": [
+          0.0,
+          0.0
+        ],
+        "asvspoof_actdcf": [
+          0.0,
+          0.014
+        ],
+        "banking_mindcf": [
+          0.0,
+          0.0
+        ],
+        "banking_actdcf": [
+          0.0,
+          0.0311
+        ],
+        "cllr": [
+          0.1032,
+          0.1221
+        ]
+      },
+      "attacks": {
+        "A09": {
+          "n_spoofs": 24,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9062
+        },
+        "A10": {
+          "n_spoofs": 33,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9062
+        },
+        "A11": {
+          "n_spoofs": 24,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9059
+        },
+        "A12": {
+          "n_spoofs": 26,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0385,
+          "mean_score": 0.8837
+        },
+        "A13": {
+          "n_spoofs": 30,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9019
+        },
+        "A14": {
+          "n_spoofs": 32,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9061
+        },
+        "A15": {
+          "n_spoofs": 30,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9063
+        },
+        "A16": {
+          "n_spoofs": 29,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9064
+        }
+      }
+    },
+    "g711_alaw": {
+      "total_trials": 300,
+      "bonafide_count": 72,
+      "spoof_count": 228,
+      "unique_speakers": 208,
+      "eer": 0.0,
+      "eer_threshold": 0.8241,
+      "bonafide_score_mean": 0.069,
+      "bonafide_score_std": 0.0073,
+      "spoof_score_mean": 0.9061,
+      "spoof_score_std": 0.0068,
+      "cllr": 0.1042,
+      "asvspoof_min_dcf": 0.0,
+      "asvspoof_act_dcf": 0.0,
+      "banking_min_dcf": 0.0,
+      "banking_act_dcf": 0.0088,
+      "bootstrap_ci_95": {
+        "eer_percent": [
+          0.0,
+          0.0
+        ],
+        "asvspoof_mindcf": [
+          0.0,
+          0.0
+        ],
+        "asvspoof_actdcf": [
+          0.0,
+          0.0
+        ],
+        "banking_mindcf": [
+          0.0,
+          0.0
+        ],
+        "banking_actdcf": [
+          0.0,
+          0.0259
+        ],
+        "cllr": [
+          0.1037,
+          0.1049
+        ]
+      },
+      "attacks": {
+        "A09": {
+          "n_spoofs": 24,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9063
+        },
+        "A10": {
+          "n_spoofs": 33,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9063
+        },
+        "A11": {
+          "n_spoofs": 24,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.906
+        },
+        "A12": {
+          "n_spoofs": 26,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9115
+        },
+        "A13": {
+          "n_spoofs": 30,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9006
+        },
+        "A14": {
+          "n_spoofs": 32,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9063
+        },
+        "A15": {
+          "n_spoofs": 30,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9065
+        },
+        "A16": {
+          "n_spoofs": 29,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9065
+        }
+      }
+    },
+    "amr_nb": {
+      "total_trials": 300,
+      "bonafide_count": 72,
+      "spoof_count": 228,
+      "unique_speakers": 208,
+      "eer": 0.0,
+      "eer_threshold": 0.2523,
+      "bonafide_score_mean": 0.0721,
+      "bonafide_score_std": 0.0126,
+      "spoof_score_mean": 0.8966,
+      "spoof_score_std": 0.0611,
+      "cllr": 0.1165,
+      "asvspoof_min_dcf": 0.0,
+      "asvspoof_act_dcf": 0.0088,
+      "banking_min_dcf": 0.0,
+      "banking_act_dcf": 0.057,
+      "bootstrap_ci_95": {
+        "eer_percent": [
+          0.0,
+          0.0
+        ],
+        "asvspoof_mindcf": [
+          0.0,
+          0.0
+        ],
+        "asvspoof_actdcf": [
+          0.0,
+          0.0239
+        ],
+        "banking_mindcf": [
+          0.0,
+          0.0
+        ],
+        "banking_actdcf": [
+          0.0263,
+          0.0885
+        ],
+        "cllr": [
+          0.1063,
+          0.1335
+        ]
+      },
+      "attacks": {
+        "A09": {
+          "n_spoofs": 24,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9062
+        },
+        "A10": {
+          "n_spoofs": 33,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9063
+        },
+        "A11": {
+          "n_spoofs": 24,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0417,
+          "mean_score": 0.8752
+        },
+        "A12": {
+          "n_spoofs": 26,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9071
+        },
+        "A13": {
+          "n_spoofs": 30,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0333,
+          "mean_score": 0.858
+        },
+        "A14": {
+          "n_spoofs": 32,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.907
+        },
+        "A15": {
+          "n_spoofs": 30,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9043
+        },
+        "A16": {
+          "n_spoofs": 29,
+          "eer": 0.0,
+          "min_dcf": 0.0,
+          "act_dcf": 0.0,
+          "mean_score": 0.9063
+        }
+      }
+    }
+  }
+}

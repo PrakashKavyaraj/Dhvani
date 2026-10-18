@@ -115,22 +115,34 @@ class ProbabilityCalibrator:
         cost_miss: float = 10.0,
         cost_fa: float = 1.0,
         p_target: float = 0.01,
+        scale: str = "raw",
     ) -> float:
         """
-        Computes the optimal theoretical Bayes decision threshold on the raw score scale.
-        theta_bayes_llr = log( (cost_fa * (1 - p_target)) / (cost_miss * p_target) )
+        Computes the theoretical Bayes decision threshold across representation scales:
+        1. scale="llr": Invariant Log-Likelihood Ratio threshold: theta_LLR = ln((c_fa*(1-p))/(c_miss*p)).
+        2. scale="posterior": Optimal threshold on true posterior probability: theta_post = c_fa / (c_fa + c_miss).
+        3. scale="sigmoid_balanced": Cutoff on sigmoid(LLR) under balanced 50/50 prior: beta / (1 + beta).
+        4. scale="raw": Inverted from LLR to raw score scale: s = (LLR + log_prior_odds - b) / a.
         """
         c_miss = max(0.001, cost_miss)
         c_fa = max(0.001, cost_fa)
         p_t = max(0.0001, min(0.9999, p_target))
 
-        bayes_llr = math.log((c_fa * (1.0 - p_t)) / (c_miss * p_t))
-        prior_odds = self.training_prior / (1.0 - self.training_prior)
-        log_prior_odds = math.log(prior_odds)
+        beta = (c_fa * (1.0 - p_t)) / (c_miss * p_t)
+        bayes_llr = math.log(beta)
 
-        # Invert from LLR to raw score scale: s = (LLR + log_prior_odds - b) / a
-        raw_threshold = (bayes_llr + log_prior_odds - self.b) / max(0.001, self.a)
-        return float(np.clip(raw_threshold, 0.0, 1.0))
+        if scale == "llr":
+            return float(bayes_llr)
+        elif scale == "posterior":
+            return float(c_fa / (c_fa + c_miss))
+        elif scale == "sigmoid_balanced":
+            return float(beta / (1.0 + beta))
+        else:
+            # Default "raw" score scale via inverse Platt mapping
+            prior_odds = self.training_prior / (1.0 - self.training_prior)
+            log_prior_odds = math.log(prior_odds)
+            raw_threshold = (bayes_llr + log_prior_odds - self.b) / max(0.001, self.a)
+            return float(np.clip(raw_threshold, 0.0, 1.0))
 
     def fit(
         self,

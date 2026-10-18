@@ -104,12 +104,26 @@ class TestProbabilityCalibrator:
 
     def test_bayes_threshold_calculation(self):
         calibrator = ProbabilityCalibrator()
-        th_asv = calibrator.compute_bayes_threshold(cost_miss=1.0, cost_fa=1.0, p_target=0.05)
-        th_bank = calibrator.compute_bayes_threshold(cost_miss=10.0, cost_fa=1.0, p_target=0.01)
+        th_asv_raw = calibrator.compute_bayes_threshold(cost_miss=10.0, cost_fa=1.0, p_target=0.05, scale="raw")
+        th_bank_raw = calibrator.compute_bayes_threshold(cost_miss=10.0, cost_fa=1.0, p_target=0.01, scale="raw")
 
-        # Higher cost of miss should lower the decision threshold to catch more spoofs
-        assert 0.0 <= th_asv <= 1.0
-        assert 0.0 <= th_bank <= 1.0
+        assert 0.0 <= th_asv_raw <= 1.0
+        assert 0.0 <= th_bank_raw <= 1.0
+
+        # Exact mathematical scale verifications
+        th_asv_llr = calibrator.compute_bayes_threshold(cost_miss=10.0, cost_fa=1.0, p_target=0.05, scale="llr")
+        assert th_asv_llr == pytest.approx(math.log(1.90), abs=1e-4)
+
+        th_bank_llr = calibrator.compute_bayes_threshold(cost_miss=10.0, cost_fa=1.0, p_target=0.01, scale="llr")
+        assert th_bank_llr == pytest.approx(math.log(9.90), abs=1e-4)
+
+        # Operational posterior cutoff on deployment prior scale: C_fa / (C_fa + C_miss) = 1/11
+        th_asv_post = calibrator.compute_bayes_threshold(cost_miss=10.0, cost_fa=1.0, p_target=0.05, scale="posterior")
+        assert th_asv_post == pytest.approx(1.0 / 11.0, abs=1e-4)
+
+        # Balanced sigmoid cutoff: beta / (1 + beta) = 1.9 / 2.9 = 0.65517
+        th_asv_sig = calibrator.compute_bayes_threshold(cost_miss=10.0, cost_fa=1.0, p_target=0.05, scale="sigmoid_balanced")
+        assert th_asv_sig == pytest.approx(1.90 / 2.90, abs=1e-4)
 
 
 class TestTelephonyCodecs:
@@ -338,5 +352,104 @@ class TestBenchmarkSuiteIntegration:
         assert trials[2]["label"] == 1
         assert trials[2]["codec"] == "C01"
         assert trials[2]["generator"] == "A15"
+
+    def test_asvspoof5_dev_slice_evaluation_artifact_integrity(self):
+        """
+        Validates the integrity of the empirical ASVspoof 5 development slice evaluation artifacts.
+        Ensures 300 real FLAC audio trials, 8 attack tags, bootstrap CIs, and Rule of Three bounds.
+        """
+        from pathlib import Path
+        import json
+
+        backend_dir = Path(__file__).resolve().parent.parent
+        json_path = backend_dir / "data" / "asvspoof5_dev_slice_scores.json"
+        md_path = backend_dir / "docs" / "ASVSPOOF5_DEV_SLICE_EVALUATION.md"
+
+        if not json_path.is_file() or not md_path.is_file():
+            pytest.skip("ASVspoof 5 slice evaluation artifacts not found, skipping integrity test.")
+
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        assert data["total_trials"] == 300
+        assert data["bonafide_count"] == 72
+        assert data["spoof_count"] == 228
+        assert data["unique_speakers"] == 208
+
+        # Verify all 8 dev attacks are present
+        attacks = data["attacks"]
+        expected_attacks = {f"A{i:02d}" for i in range(9, 17)}
+        assert set(attacks.keys()) == expected_attacks
+
+        # Metrics validity
+        m = data["overall_metrics"]
+        assert 0.0 <= m["eer"] <= 1.0
+        assert 0.0 <= m["asvspoof_profile"]["min_dcf"] <= 1.0
+        assert 0.0 <= m["asvspoof_profile"]["act_dcf"] <= 1.0
+        assert 0.0 <= m["cllr"] <= 1.0
+
+        # Bootstrap CIs validity
+        ci = data["bootstrap_ci_95"]
+        assert "eer_percent" in ci
+        assert "asvspoof_mindcf" in ci
+        assert "cllr" in ci
+
+        # Verify Markdown report formatting & Rule of Three disclosure
+        md_content = md_path.read_text(encoding="utf-8")
+        assert "# ASVspoof 5 Development Set: Empirical Audio Slice Evaluation" in md_content
+        assert "Rule of Three" in md_content
+        assert "4.17" in md_content
+        assert "1.32" in md_content
+        assert "A09" in md_content
+        assert "A16" in md_content
+
+    def test_asvspoof5_telephony_degradation_artifact_integrity(self):
+        """
+        Validates the formal biometric artifacts from the telephony degradation evaluation.
+        Ensures presence of clean_16k, g711_alaw, amr_nb conditions, attacks, and Rule of Three bounds.
+        """
+        from pathlib import Path
+        import json
+
+        backend_dir = Path(__file__).resolve().parent.parent
+        json_path = backend_dir / "data" / "asvspoof5_telephony_degradation_scores.json"
+        md_path = backend_dir / "docs" / "TELEPHONY_CODEC_DEGRADATION_REPORT.md"
+
+        if not json_path.is_file() or not md_path.is_file():
+            pytest.skip("ASVspoof 5 telephony degradation artifacts not found, skipping integrity test.")
+
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        assert data["total_trials"] == 300
+        assert data["bonafide_count"] == 72
+        assert data["spoof_count"] == 228
+        assert data["unique_speakers"] == 208
+
+        # Verify all conditions are present
+        conds = data["conditions"]
+        assert "clean_16k" in conds
+        assert "g711_alaw" in conds
+        assert "amr_nb" in conds
+
+        # Verify each condition has valid metrics and bootstrap CIs
+        for c_key in ["clean_16k", "g711_alaw", "amr_nb"]:
+            c = conds[c_key]
+            assert 0.0 <= c["eer"] <= 1.0
+            assert 0.0 <= c["asvspoof_min_dcf"] <= 1.0
+            assert 0.0 <= c["asvspoof_act_dcf"] <= 1.0
+            assert 0.0 <= c["cllr"] <= 1.0
+            assert "eer_percent" in c["bootstrap_ci_95"]
+
+        # Verify Markdown report formatting & Rule of Three disclosure
+        md_content = md_path.read_text(encoding="utf-8")
+        assert "# Telephony Codec Transcoding Degradation: Empirical Audio Evaluation" in md_content
+        assert "ITU-T G.711 A-law" in md_content
+        assert "AMR-NB Narrowband" in md_content
+        assert "Rule of Three" in md_content
+        assert "4.17" in md_content
+        assert "1.32" in md_content
+
+
 
 
